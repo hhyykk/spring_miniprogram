@@ -1,19 +1,29 @@
 import { createVenue } from '../../utils/venue'
-import { load, save, Project, statuses, notify, confirm, persistFile } from '../../utils/store'
+import { load, save, sync, Project, statuses, notify, confirm, persistFile } from '../../utils/store'
 interface PreviewCanvas { width: number; height: number }
 interface PreviewVenue { dispose(): void }
 Page({
-  data: { project: null as Project | null, role: '', statuses, entries: [] as object[], clock: '', countdown: '', markers: [] as object[], mapPoints: [] as { latitude: number; longitude: number }[], hasUserLocation: false, locationError: '', modelPreview: '', previewError: '' },
+  data: { project: null as Project | null, role: '', statuses, entries: [] as object[], clock: '', countdown: '', markers: [] as object[], mapPoints: [] as { latitude: number; longitude: number }[], hasUserLocation: false, locationError: '', modelPreview: '', previewError: '', videoUrl: '' },
   projectId: '', visible: false, tracking: false, locationListener: null as ((position: { latitude: number; longitude: number }) => void) | null, ready: false, previewVenue: null as PreviewVenue | null,
   onLoad(query: Record<string, string>) { this.projectId = query.id },
-  onShow() { this.visible = true; this.refresh(); this.locateUser(); if (this.ready) this.renderModelPreview() },
+  renderedRevision: -1,
+  poll: null as ReturnType<typeof setInterval> | null,
+  async reload() { try { await sync(); if (load().revision !== this.renderedRevision || load().role !== this.data.role) this.refresh(); if (this.ready && !this.data.modelPreview) this.renderModelPreview() } catch { notify('云端连接失败，请返回重试') } },
+  onShow() { this.visible = true; this.reload(); this.locateUser(); this.poll = setInterval(() => this.reload(), 10000) },
   onReady() { this.ready = true; this.renderModelPreview() },
-  onHide() { this.stopTracking() }, onUnload() { this.stopTracking(); this.previewVenue?.dispose() },
+  onHide() { this.stopTracking(); if (this.poll) clearInterval(this.poll) }, onUnload() { this.stopTracking(); if (this.poll) clearInterval(this.poll); this.previewVenue?.dispose() },
   refresh() {
     const state = load()
+    this.renderedRevision = state.revision
     const project = state.projects.find(item => item.id === this.projectId)
-    if (!project) return
-    this.setData({ project, role: state.role, markers: [{
+    if (!project) { this.setData({ project: null }); return }
+    if (project.video !== this.data.project?.video) {
+      this.setData({ videoUrl: '' })
+      if (project.video) wx.cloud.getTempFileURL({ fileList: [project.video] }).then(result => {
+        if (this.data.project?.video === project.video) this.setData({ videoUrl: result.fileList[0].tempFileURL })
+      }).catch(() => notify('视频加载失败，请重新打开项目'))
+    }
+    this.setData({ project, entries: project.entries.map(e => ({ ...e, name: state.teams.find(t => t.id === e.teamId)?.name || '队伍' })), role: state.role, markers: [{
       id: 99, iconPath: '/assets/pin.png', width: 28, height: 36,
       latitude: project.latitude, longitude: project.longitude, title: project.name,
     }], mapPoints: [{ latitude: project.latitude, longitude: project.longitude }] })
@@ -93,16 +103,24 @@ Page({
         }
       })
   },
-  mutate(change: (project: Project) => void, adminOnly = true) { const state = load(); if (adminOnly ? state.role !== '管理员' : state.role === '用户') return; const p = state.projects.find(item => item.id === this.projectId); if (!p) return; change(p); save(state); this.refresh() },
-  saveForm(e: WechatMiniprogram.FormSubmit) { const v = e.detail.value as Record<string, string>; const name = v.name.trim(); if (!name) return notify('请填写项目名称'); this.mutate(p => { p.name = name; p.description = v.description.trim(); p.address = v.address.trim() }); notify('项目资料已保存') },
+  async mutate(change: (project: Project) => void, adminOnly = true) { const state = load(); if (adminOnly ? state.role !== '管理员' : state.role === '用户') return false; const p = state.projects.find(item => item.id === this.projectId); if (!p) return false; change(p); if (!await save(state)) return false; this.refresh(); return true },
+  async saveForm(e: WechatMiniprogram.FormSubmit) { const v = e.detail.value as Record<string, string>; const name = v.name.trim(); if (!name) return notify('请填写项目名称'); if (await this.mutate(p => { p.name = name; p.description = v.description.trim(); p.address = v.address.trim() })) notify('项目资料已保存') },
   changeTime(e: WechatMiniprogram.PickerChange) { const field = e.currentTarget.dataset.field as 'start' | 'end'; const value = String(e.detail.value); const p = this.data.project!; if (field === 'start' ? value >= p.end : value <= p.start) return notify('结束时间须晚于开始时间'); this.mutate(project => { project[field] = value }) },
   changeStatus(e: WechatMiniprogram.PickerChange) { const status = Number(e.detail.value); const commit = () => this.mutate(p => { p.status = status }, false); if (status === 2 && this.data.project!.entries.some(entry => entry.status !== 2)) confirm('仍有队伍未完成', '结束项目将保留各队当前状态，之后仍可补录成绩。确定结束？', commit); else commit() },
   entryAction(e: WechatMiniprogram.TouchEvent) { const id = e.currentTarget.dataset.id; const action = e.currentTarget.dataset.action; this.mutate(p => { const entry = p.entries.find(item => item.teamId === id)!; if (action === 'start') { if (p.status !== 1 || entry.status !== 0) return notify('请先将项目设为进行中'); entry.status = 1; entry.startedAt = Date.now() } else if (entry.status === 1) { entry.status = 2; entry.finishedAt = Date.now() } }, false) },
-  score(e: WechatMiniprogram.TouchEvent) { if (load().role !== '裁判') return; const id = e.currentTarget.dataset.id; const entry = this.data.project!.entries.find(item => item.teamId === id)!; wx.showModal({ title: '录入成绩（0～100）', editable: true, content: entry.score === null ? '' : String(entry.score), success: r => { if (!r.confirm) return; const raw = (r.content || '').trim(); const value = Number(raw); if (!raw || !Number.isFinite(value) || value < 0 || value > 100) return notify('请输入 0～100 的有效分数'); this.mutate(p => { p.entries.find(item => item.teamId === id)!.score = value }, false) } }) },
-  async addMedia(e: WechatMiniprogram.TouchEvent) { if (load().role !== '管理员') return; const video = e.currentTarget.dataset.type === 'video'; const remaining = 6 - this.data.project!.images.length; if (!video && !remaining) return notify('最多 6 张图片'); wx.chooseMedia({ count: video ? 1 : remaining, mediaType: [video ? 'video' : 'image'], sourceType: ['album', 'camera'], success: async result => { try { const paths = await Promise.all(result.tempFiles.map(file => persistFile(file.tempFilePath))); this.mutate(p => { if (video) p.video = paths[0]; else p.images.push(...paths) }) } catch { notify('媒体保存失败，请检查设备空间') } } }) },
+  score(e: WechatMiniprogram.TouchEvent) { if (load().role === '用户') return; const id = e.currentTarget.dataset.id; const entry = this.data.project!.entries.find(item => item.teamId === id)!; wx.showModal({ title: '录入成绩（0～100）', editable: true, content: entry.score === null ? '' : String(entry.score), success: r => { if (!r.confirm) return; const raw = (r.content || '').trim(); const value = Number(raw); if (!raw || !Number.isFinite(value) || value < 0 || value > 100) return notify('请输入 0～100 的有效分数'); this.mutate(p => { p.entries.find(item => item.teamId === id)!.score = value }, false) } }) },
+  async addMedia(e: WechatMiniprogram.TouchEvent) { if (load().role !== '管理员') return; const video = e.currentTarget.dataset.type === 'video'; const remaining = 6 - this.data.project!.images.length; if (!video && !remaining) return notify('最多 6 张图片'); wx.chooseMedia({ count: video ? 1 : remaining, mediaType: [video ? 'video' : 'image'], sourceType: ['album', 'camera'], success: async result => { try { const paths = await Promise.all(result.tempFiles.map(file => persistFile(file.tempFilePath))); this.mutate(p => { if (video) p.video = paths[0]; else p.images.push(...paths) }) } catch { notify('媒体上传失败，请检查网络和云存储权限') } } }) },
   removeMedia(e: WechatMiniprogram.TouchEvent) { confirm('删除参考资料', '确定移除这份参考资料？', () => this.mutate(p => { if (e.currentTarget.dataset.type === 'video') p.video = ''; else p.images.splice(Number(e.currentTarget.dataset.index), 1) })) },
-  preview(e: WechatMiniprogram.TouchEvent) { wx.previewImage({ urls: this.data.project!.images, current: e.currentTarget.dataset.src }) },
+  async preview(e: WechatMiniprogram.TouchEvent) {
+    try {
+      const images = this.data.project!.images
+      const result = await wx.cloud.getTempFileURL({ fileList: images })
+      const urls = result.fileList.map(file => file.tempFileURL)
+      if (urls.some(url => !url)) throw new Error('图片不可用')
+      wx.previewImage({ urls, current: urls[Math.max(0, images.indexOf(e.currentTarget.dataset.src))] })
+    } catch { notify('图片加载失败，请重试') }
+  },
   location() { wx.navigateTo({ url: `/pages/location/location?id=${this.projectId}${this.data.role === '管理员' ? '&edit=1' : ''}` }) },
   scene() { wx.navigateTo({ url: `/pages/scene/scene?id=${this.projectId}` }) },
-  deleteProject() { confirm('删除项目', '相关参赛状态和成绩将一起移除，总榜会重新计算。此操作不可撤销。', () => { const state = load(); if (state.role !== '管理员') return; state.projects = state.projects.filter(p => p.id !== this.projectId); save(state); wx.navigateBack() }) },
+  deleteProject() { confirm('删除项目', '相关参赛状态和成绩将一起移除，总榜会重新计算。此操作不可撤销。', async () => { const state = load(); if (state.role !== '管理员') return; state.projects = state.projects.filter(p => p.id !== this.projectId); if (await save(state)) wx.navigateBack() }) },
 })

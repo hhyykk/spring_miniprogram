@@ -21,5 +21,9 @@ npm run check:device-syntax
 - `scripts/`：设备语法检查脚本。
 - `docs/`：演示范围与操作说明。
 
-地图定位需要微信授权。当前活动与参赛数据存储在本机；3D 场地为示意模型。
+地图定位需要微信授权。活动与参赛数据通过微信云开发共享；3D 场地为示意模型。
+
+## 云开发部署
+
+先按 [部署说明](docs/cloud-deployment.md) 初始化数据库、配置权限并部署云函数，再上传小程序。无需 Docker 或 Express 容器。当前实现面向单场团建活动。
 机器专属的 `project.private.config.json` 不提交到仓库。

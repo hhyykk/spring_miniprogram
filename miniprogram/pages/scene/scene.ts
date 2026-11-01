@@ -16,6 +16,6 @@ Page({
   select(id: string) { this.setData({ selected: this.data.projects.find(p => p.id === id) || null }); this.init() },
   chooseProject(e: WechatMiniprogram.PickerChange) { this.select(this.data.projects[Number(e.detail.value)].id) },
   zoom(e: WechatMiniprogram.TouchEvent) { this.venue?.zoom(e.currentTarget.dataset.direction === 'in' ? .85 : 1.15) },
-  setSpot(e: WechatMiniprogram.PickerChange) { const state = load(); if (state.role !== '管理员' || !this.data.selected) return; const p = state.projects.find(p => p.id === this.data.selected!.id)!; p.spot = Number(e.detail.value); save(state); this.setData({ projects: state.projects, selected: p }); this.init(); notify('3D 项目标记已保存') },
+  async setSpot(e: WechatMiniprogram.PickerChange) { const state = load(); if (state.role !== '管理员' || !this.data.selected) return; const p = state.projects.find(p => p.id === this.data.selected!.id)!; p.spot = Number(e.detail.value); if (!await save(state)) return; this.setData({ projects: state.projects, selected: p }); this.init(); notify('3D 项目标记已保存') },
   detail() { if (this.data.selected) wx.navigateTo({ url: `/pages/project/project?id=${this.data.selected.id}` }) },
 })
