@@ -1,4 +1,4 @@
-<view class="page" wx:if="{{project}}"><view class="heading">{{project.name}}</view>
+<view class="page" wx:if="{{project}}"><view class="project-title"><view class="heading">{{project.name}}</view><button wx:if="{{role === '管理员'}}" class="secondary project-edit" bindtap="editProject">编辑</button></view>
 <view class="detail-tabs" role="tablist">
   <button class="detail-tab {{detailTab === 'detail' ? 'selected' : ''}}" data-tab="detail" bindtap="switchDetailTab" role="tab" aria-selected="{{detailTab === 'detail'}}">项目详情</button>
   <button class="detail-tab {{detailTab === 'progress' ? 'selected' : ''}}" data-tab="progress" bindtap="switchDetailTab" role="tab" aria-selected="{{detailTab === 'progress'}}">队伍进度</button>
@@ -12,15 +12,14 @@
   <view wx:if="{{locationError}}" class="location-error">{{locationError}}</view>
   <button wx:if="{{role === '管理员'}}" class="secondary edit-location" bindtap="location">设置项目地点</button>
   <view class="section">3D 场地示意</view>
-  <view class="model-preview" bindtap="scene" role="button" aria-label="放大查看 3D 场地模型">
+  <view class="model-preview" bindtap="scene" role="button" aria-label="全屏预览 3D 模型">
     <image wx:if="{{modelPreview}}" src="{{modelPreview}}" mode="aspectFit" class="model-image"/>
     <view wx:else class="model-placeholder">{{previewError || '正在生成模型预览…'}}</view>
-    <view class="model-open">放大查看 ↗</view>
+    <view class="model-open">全屏预览</view>
   </view>
 </view>
 <canvas type="webgl" id="model-preview-canvas" class="preview-canvas"/>
-<view class="section">现场参考 <text class="small muted">图片 / 视频</text></view><view class="card"><view class="media-grid"><view wx:for="{{project.images}}" wx:key="*this" class="media-item"><image src="{{item}}" mode="aspectFill" data-src="{{item}}" bindtap="preview"/><view wx:if="{{role === '管理员'}}" class="media-delete" data-index="{{index}}" data-type="image" bindtap="removeMedia">删除 / 重新添加</view></view></view><video wx:if="{{project.video}}" src="{{videoUrl}}" controls/><view wx:if="{{project.video && role === '管理员'}}" class="media-delete" data-type="video" bindtap="removeMedia">删除视频</view><view wx:if="{{!project.images.length && !project.video}}" class="empty">暂无参考资料</view><view wx:if="{{role === '管理员'}}" class="button-row"><button class="secondary" data-type="image" bindtap="addMedia">＋ 图片 {{project.images.length}}/6</button><button class="secondary" data-type="video" bindtap="addMedia">{{project.video ? '替换视频' : '＋ 视频'}}</button></view></view>
-<view wx:if="{{role === '管理员'}}"><view class="section">项目设置</view><form bindsubmit="saveForm" class="card project-form"><text class="field-label">项目名称</text><input name="name" value="{{project.name}}" maxlength="30"/><text class="field-label">项目规则</text><textarea name="description" value="{{project.description}}" maxlength="500"/><button class="primary" form-type="submit" style="margin-top:30rpx">保存项目资料</button></form><button class="danger" bindtap="deleteProject">删除项目</button></view></block>
+</block>
 <block wx:if="{{detailTab === 'progress'}}">
 <view wx:if="{{!entries.length}}" class="empty">暂无参赛队伍</view>
 <view wx:for="{{entries}}" wx:key="teamId" class="card">

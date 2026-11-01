@@ -10,7 +10,7 @@ exports.createVenue = function(canvas, width, height, pixelRatio, projects, sele
   renderer.setSize(width, height, false)
   renderer.setClearColor(0xf0eee7)
   const scene = new THREE.Scene()
-  const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 200)
+  const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 500)
   const group = new THREE.Group()
   scene.add(group)
   scene.add(new THREE.AmbientLight(0xffffff, 0.8))
@@ -58,12 +58,14 @@ exports.createVenue = function(canvas, width, height, pixelRatio, projects, sele
     pins.push(pin)
   })
   let angle = 0.65
-  let distance = 38
+  // Fit the complete venue horizontally on a tall, full-screen phone canvas.
+  const framingScale = Math.max(1, height / width)
+  let distance = 38 * framingScale
   function render() { camera.position.set(Math.sin(angle) * distance, distance * 0.85, Math.cos(angle) * distance); camera.lookAt(new THREE.Vector3(0, 0, 0)); renderer.render(scene, camera) }
   render()
   return {
     rotate(delta) { angle += delta; render() },
-    zoom(factor) { distance = Math.max(22, Math.min(60, distance * factor)); render() },
+    zoom(factor) { distance = Math.max(22 * framingScale, Math.min(60 * framingScale, distance * factor)); render() },
     pick(x, y) { const ray = new THREE.Raycaster(); ray.setFromCamera(new THREE.Vector2(x / width * 2 - 1, 1 - y / height * 2), camera); const hit = ray.intersectObjects(pins)[0]; return hit ? hit.object.userData.projectId : '' },
     dispose() { geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); renderer.dispose() }
   }

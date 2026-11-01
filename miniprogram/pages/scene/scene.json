@@ -1,4 +1,7 @@
 {
   "navigationBarTitleText": "3D 场地示意",
-  "usingComponents": {}
+  "usingComponents": {},
+  "navigationStyle": "custom",
+  "disableScroll": true,
+  "backgroundColor": "#f0eee7"
 }

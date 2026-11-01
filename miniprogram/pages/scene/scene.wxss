@@ -1,10 +1,7 @@
-.scene-wrap { height: 640rpx; position: relative; border-radius: 24rpx; overflow: hidden; margin: 24rpx 0; background: #e9edef; }
-canvas { width: 100%; height: 100%; }
-.error { position: absolute; top: 30%; padding: 32rpx; text-align: center; color: var(--text); line-height: 1.6; font-size: 30rpx; }
-.legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16rpx; color: #536546; font-size: 28rpx; margin: 28rpx 0; }
-.legend text:nth-child(2) { color: #845a3e; }
-.legend text:nth-child(3) { color: #386d78; }
-.legend text:nth-child(4) { color: #75633d; }
-.between > text { flex: 1; min-width: 0; }
-.between .row { flex-shrink: 0; }
-.row button { width: 92rpx; padding: 20rpx; font-size: 34rpx; }
+page { height: 100%; overflow: hidden; background: #f0eee7; }
+.scene-fullscreen { position: fixed; inset: 0; width: 100%; height: 100%; overflow: hidden; background: #f0eee7; }
+#venue { display: block; width: 100%; height: 100%; }
+.scene-back { position: absolute; z-index: 10; left: 24rpx; width: 88rpx; min-height: 0; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 999rpx; background: #ffffff; color: #202428; font-size: 56rpx; font-weight: 400; line-height: 1; }
+.scene-controls { position: absolute; z-index: 10; right: 28rpx; bottom: 28rpx; display: flex; gap: 16rpx; }
+.scene-control { width: 96rpx; height: 96rpx; min-height: 0; padding: 0; display: flex; align-items: center; justify-content: center; background: #ffffff; color: #202428; font-size: 40rpx; }
+.scene-error { position: absolute; z-index: 10; left: 32rpx; right: 32rpx; top: 40%; padding: 28rpx; background: #ffffff; border-radius: 16rpx; text-align: center; color: #202428; line-height: 1.6; font-size: 28rpx; }
