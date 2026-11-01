@@ -6,12 +6,25 @@
 <block wx:if="{{detailTab === 'detail'}}">
 <view class="card project-description">
   <view class="section" style="margin-top:0">项目说明</view>
-  <view class="small project-rules">{{project.description}}</view>
+  <block wx:if="{{role === '管理员'}}">
+    <textarea class="description-input" value="{{descriptionDraft}}" bindinput="inputDescription" maxlength="500" aria-label="项目说明"/>
+    <view wx:if="{{descriptionError}}" class="description-error">{{descriptionError}}</view>
+    <view class="description-actions">
+      <button wx:if="{{descriptionError}}" class="secondary description-reload" bindtap="resetDescription">载入最新说明</button>
+      <button class="primary description-save" bindtap="saveDescription" loading="{{descriptionSaving}}" disabled="{{descriptionSaving}}">保存项目说明</button>
+    </view>
+  </block>
+  <view wx:else class="small project-rules">{{project.description || '暂无项目说明'}}</view>
+</view>
+<view class="card project-location">
+  <view class="section" style="margin-top:0">项目地点</view>
   <map id="project-map" class="project-map" latitude="{{project.latitude}}" longitude="{{project.longitude}}" markers="{{markers}}" include-points="{{mapPoints}}" show-location="{{hasUserLocation}}" scale="16" enable-scroll="true" enable-zoom="true"/>
   <view wx:if="{{project.address}}" class="map-address">{{project.address}}</view>
   <view wx:if="{{locationError}}" class="location-error">{{locationError}}</view>
   <button wx:if="{{role === '管理员'}}" class="secondary edit-location" bindtap="location">设置项目地点</button>
-  <view class="section">3D 场地示意</view>
+</view>
+<view class="card project-model">
+  <view class="section" style="margin-top:0">3D 场地示意</view>
   <view class="model-preview" bindtap="scene" role="button" aria-label="全屏预览 3D 模型">
     <image wx:if="{{modelPreview}}" src="{{modelPreview}}" mode="aspectFit" class="model-image"/>
     <view wx:else class="model-placeholder">{{previewError || '正在生成模型预览…'}}</view>
