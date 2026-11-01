@@ -1,0 +1,14 @@
+{
+  "envId": "aihop-d6gxlq7zxdfdea087",
+  "functionRoot": "./cloudfunctions",
+  "functions": [
+    {
+      "name": "activity",
+      "runtime": "Nodejs20.19",
+      "timeout": 15,
+      "memorySize": 256,
+      "handler": "index.main",
+      "installDependency": true
+    }
+  ]
+}

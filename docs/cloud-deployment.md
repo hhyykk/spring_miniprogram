@@ -18,7 +18,7 @@
 
 ## 3. 部署云函数
 
-项目已设置 `cloudfunctionRoot: cloudfunctions/`。在开发者工具中将 `cloudfunctions` 的云环境设为上述环境，对 `activity` 目录执行“上传并部署：云端安装依赖”。选择平台当前支持的 Node.js 18 或更高运行时。
+项目已设置 `cloudfunctionRoot: cloudfunctions/`。在开发者工具中将 `cloudfunctions` 的云环境设为上述环境，对 `activity` 目录执行“上传并部署：云端安装依赖”。运行时使用 `Nodejs20.19`，超时 15 秒、内存 256 MB；这些非敏感配置已保存在根目录 `cloudbaserc.json`，管理员身份只保存在云函数环境变量中。
 
 函数通过 `wx-server-sdk` 的 `getWXContext()` 获取微信身份，不信任客户端传入的身份或角色。不要配置无需鉴权的 HTTP 访问入口。
 
