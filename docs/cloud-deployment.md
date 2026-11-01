@@ -18,7 +18,7 @@
 
 ## 3. 部署云函数
 
-项目已设置 `cloudfunctionRoot: cloudfunctions/`。在开发者工具中将 `cloudfunctions` 的云环境设为上述环境，对 `activity` 目录执行“上传并部署：云端安装依赖”。运行时使用 `Nodejs20.19`，超时 15 秒、内存 256 MB；这些非敏感配置已保存在根目录 `cloudbaserc.json`，管理员身份只保存在云函数环境变量中。
+项目已设置 `cloudfunctionRoot: cloudfunctions/`。在开发者工具中将 `cloudfunctions` 的云环境设为上述环境，对 `activity` 目录执行“上传并部署：云端安装依赖”。现有函数运行时为 `Nodejs16.13`（开发者工具默认创建，代码已兼容），超时 15 秒、内存 256 MB；这些非敏感配置已保存在根目录 `cloudbaserc.json`，管理员身份只保存在云函数环境变量中。
 
 函数通过 `wx-server-sdk` 的 `getWXContext()` 获取微信身份，不信任客户端传入的身份或角色。不要配置无需鉴权的 HTTP 访问入口。
 
@@ -60,3 +60,13 @@ npm run test:cloud
 测试覆盖服务端身份、权限、资料修改、队长交接、分数与状态校验、版本冲突及并发保存。SDK 边界以测试替身隔离；云上权限、实际事务和媒体可读性仍须执行上面的真机验收。
 
 参考：[官方数据库事务](https://docs.cloudbase.net/database/transaction)、[数据库安全规则](https://docs.cloudbase.net/database/security-rules)、[云存储安全规则](https://docs.cloudbase.net/storage/security-rules)。
+
+## 已执行的部署记录（2026-11-01）
+
+- 目标环境：`aihop-d6gxlq7zxdfdea087`；`activity` 云函数已部署，运行状态 Active，Nodejs16.13、15 秒、256 MB。CLI 的运行时更新提示没有实际改变已创建函数的运行时，以云端读取值为准。
+- 已创建 `activities/main` 并设置数据库规则为客户端禁止读写。活动初始为空，不包含演示成员、队伍和项目。
+- 已设置云存储为登录用户可读、创建者可写，并将当前微信开发账号配置为活动管理员；身份列表只保存在云端环境变量中。
+- 真实小程序运行时验证通过：读取共享活动、保存成功、拒绝旧版本保存、拒绝数据库直连读写、识别管理员身份。
+- 通过小程序上传测试图片，下载后逐字节比对一致；测试文件已从云存储移除。
+- 小程序开发版本 `1.0.1` 已上传，代码包约 1 MB。开发版本上传不等于审核通过或公开发布。
+- 两个不同微信账号的真机验收及公众平台提审、发布尚未执行。管理员可先在开发版创建正式队伍和项目。

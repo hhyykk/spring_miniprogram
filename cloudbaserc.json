@@ -4,7 +4,7 @@
   "functions": [
     {
       "name": "activity",
-      "runtime": "Nodejs20.19",
+      "runtime": "Nodejs16.13",
       "timeout": 15,
       "memorySize": 256,
       "handler": "index.main",
