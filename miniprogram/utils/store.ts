@@ -5,10 +5,12 @@ export interface Entry { teamId: string; status: number; score: number | null; s
 export interface Project { id: string; name: string; description: string; address: string; latitude: number; longitude: number; start: string; end: string; status: number; images: string[]; video: string; spot: number; entries: Entry[] }
 export interface State { role: Role; activity: string; date: string; members: Member[]; teams: Team[]; projects: Project[]; revision: number; openid: string }
 export const spots = ['中央草坪', '活力球场', '湖畔步道', '集合广场']
+// Legacy project.status is retained for old data; participation belongs to each team.
+export function teamStatus(project: Project, teamId: string): number { return project.entries.find(entry => entry.teamId === teamId)?.status ?? 0 }
 export const statuses = ['未开始', '进行中', '已结束']
 export const entryStatuses = ['待参与', '进行中', '已完成']
 // Only an in-memory view of the last confirmed cloud response; never a writable offline store.
-let cache: State = { role: '用户', activity: '正在连接云端…', date: '', members: [{ id: '', name: '微信用户', avatar: '', teamId: '' }], teams: [], projects: [], revision: -1, openid: '' }
+let cache: State = { role: '用户', activity: '正在连接云端…', date: '', members: [{ id: '', name: '', avatar: '', teamId: '' }], teams: [], projects: [], revision: -1, openid: '' }
 let pulling: Promise<void> | null = null
 let saving = false
 export function load(): State { return JSON.parse(JSON.stringify(cache)) as State }
@@ -38,7 +40,7 @@ export async function save(state: State): Promise<boolean> {
     return false
   } finally { saving = false; wx.hideLoading() }
 }
-export function newProject(state: State): Project { return { id: `p${Date.now()}`, name: '新团队项目', description: '填写项目规则与注意事项', address: '请选择精确地点', latitude: 22.5158, longitude: 113.9436, start: '09:00', end: '10:00', status: 0, images: [], video: '', spot: 0, entries: state.teams.map(t => ({ teamId: t.id, status: 0, score: null, startedAt: 0, finishedAt: 0 })) } }
+export function newProject(state: State): Project { return { id: `p${Date.now()}`, name: '新团队项目', description: '', address: '', latitude: 22.5158, longitude: 113.9436, start: '09:00', end: '10:00', status: 0, images: [], video: '', spot: 0, entries: state.teams.map(t => ({ teamId: t.id, status: 0, score: null, startedAt: 0, finishedAt: 0 })) } }
 export function notify(title: string) { wx.showToast({ title, icon: 'none' }) }
 export function editText(title: string, value: string, done: (value: string) => void) { wx.showModal({ title, editable: true, content: value, success: r => { if (r.confirm && r.content && r.content.trim()) done(r.content.trim()) } }) }
 export function confirm(title: string, content: string, done: () => void) { wx.showModal({ title, content, confirmColor: '#ed681f', success: r => { if (r.confirm) done() } }) }

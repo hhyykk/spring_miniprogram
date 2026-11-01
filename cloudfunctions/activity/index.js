@@ -1,5 +1,5 @@
 const cloud = require('wx-server-sdk')
-const { authorize, memberId, roleFor } = require('./domain')
+const { authorize, memberId, roleFor, normalizeState } = require('./domain')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const empty = () => ({ activity: '公司团建', date: '', members: [], teams: [], projects: [] })
@@ -16,19 +16,20 @@ exports.main = async event => {
       const response = await ref.get()
       const doc = response.data
       if (!doc) throw new Error('请先按部署说明创建 activities/main 文档')
-      let state = doc.state || empty()
+      let state = normalizeState(doc.state || empty())
       let revision = doc.revision || 0
-      let dirty = false
-      if (!state.members.some(m => m.id === id)) {
+      let dirty = JSON.stringify(state) !== JSON.stringify(doc.state)
+      const registered = state.members.some(m => m.id === id)
+      if (!registered) {
         if (state.members.length >= 300) throw new Error('活动人数已满')
-        state.members.push({ id, name: '微信用户', avatar: '', teamId: '' })
+        state.members.push({ id, name: '', avatar: '', teamId: '' })
         dirty = true
       }
       if (event.action === 'save') {
-        if (event.revision !== revision || dirty) throw new Error('数据已被更新，请点击刷新后重新修改')
+        if (event.revision !== revision || !registered) throw new Error('数据已被更新，请点击刷新后重新修改')
         const input = event.state
         if (!input || input.role !== role) throw new Error('身份已变更，请刷新')
-        const next = { activity: input.activity, date: input.date, members: input.members, teams: input.teams, projects: input.projects }
+        const next = normalizeState({ activity: input.activity, date: input.date, members: input.members, teams: input.teams, projects: input.projects })
         authorize(state, next, id, role)
         state = next
         dirty = true

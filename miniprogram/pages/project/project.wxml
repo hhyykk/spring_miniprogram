@@ -1,9 +1,14 @@
 <view class="page" wx:if="{{project}}"><view class="heading">{{project.name}}</view>
+<view class="detail-tabs" role="tablist">
+  <button class="detail-tab {{detailTab === 'detail' ? 'selected' : ''}}" data-tab="detail" bindtap="switchDetailTab" role="tab" aria-selected="{{detailTab === 'detail'}}">项目详情</button>
+  <button class="detail-tab {{detailTab === 'progress' ? 'selected' : ''}}" data-tab="progress" bindtap="switchDetailTab" role="tab" aria-selected="{{detailTab === 'progress'}}">队伍进度</button>
+</view>
+<block wx:if="{{detailTab === 'detail'}}">
 <view class="card project-description">
-  <view class="section" style="margin-top:0">项目说明 <picker wx:if="{{role !== '用户'}}" range="{{statuses}}" value="{{project.status}}" bindchange="changeStatus"><text class="orange small">更新状态 ⌄</text></picker></view>
+  <view class="section" style="margin-top:0">项目说明</view>
   <view class="small project-rules">{{project.description}}</view>
   <map id="project-map" class="project-map" latitude="{{project.latitude}}" longitude="{{project.longitude}}" markers="{{markers}}" include-points="{{mapPoints}}" show-location="{{hasUserLocation}}" scale="16" enable-scroll="true" enable-zoom="true"/>
-  <view class="map-address">{{project.address}}</view>
+  <view wx:if="{{project.address}}" class="map-address">{{project.address}}</view>
   <view wx:if="{{locationError}}" class="location-error">{{locationError}}</view>
   <button wx:if="{{role === '管理员'}}" class="secondary edit-location" bindtap="location">设置项目地点</button>
   <view class="section">3D 场地示意</view>
@@ -15,14 +20,17 @@
 </view>
 <canvas type="webgl" id="model-preview-canvas" class="preview-canvas"/>
 <view class="section">现场参考 <text class="small muted">图片 / 视频</text></view><view class="card"><view class="media-grid"><view wx:for="{{project.images}}" wx:key="*this" class="media-item"><image src="{{item}}" mode="aspectFill" data-src="{{item}}" bindtap="preview"/><view wx:if="{{role === '管理员'}}" class="media-delete" data-index="{{index}}" data-type="image" bindtap="removeMedia">删除 / 重新添加</view></view></view><video wx:if="{{project.video}}" src="{{videoUrl}}" controls/><view wx:if="{{project.video && role === '管理员'}}" class="media-delete" data-type="video" bindtap="removeMedia">删除视频</view><view wx:if="{{!project.images.length && !project.video}}" class="empty">暂无参考资料</view><view wx:if="{{role === '管理员'}}" class="button-row"><button class="secondary" data-type="image" bindtap="addMedia">＋ 图片 {{project.images.length}}/6</button><button class="secondary" data-type="video" bindtap="addMedia">{{project.video ? '替换视频' : '＋ 视频'}}</button></view></view>
-<view class="section">各队进度与成绩</view>
+<view wx:if="{{role === '管理员'}}"><view class="section">项目设置</view><form bindsubmit="saveForm" class="card project-form"><text class="field-label">项目名称</text><input name="name" value="{{project.name}}" maxlength="30"/><text class="field-label">项目规则</text><textarea name="description" value="{{project.description}}" maxlength="500"/><button class="primary" form-type="submit" style="margin-top:30rpx">保存项目资料</button></form><button class="danger" bindtap="deleteProject">删除项目</button></view></block>
+<block wx:if="{{detailTab === 'progress'}}">
+<view wx:if="{{!entries.length}}" class="empty">暂无参赛队伍</view>
 <view wx:for="{{entries}}" wx:key="teamId" class="card">
   <view class="between"><text>{{item.name}}</text><text>{{item.score === null ? '待评分' : item.score + ' 分'}}</text></view>
   <view class="small muted">{{item.status === 0 ? '待参与' : item.status === 1 ? '进行中' : '已完成'}}</view>
-  <view wx:if="{{role !== '用户'}}" class="button-row">
-    <button wx:if="{{item.status === 0 && project.status === 1}}" class="secondary" data-id="{{item.teamId}}" data-action="start" bindtap="entryAction">开始参与</button>
-    <button wx:if="{{item.status === 1}}" class="secondary" data-id="{{item.teamId}}" data-action="finish" bindtap="entryAction">完成参与</button>
-    <button class="secondary" data-id="{{item.teamId}}" bindtap="score">录入成绩</button>
+  <view wx:if="{{(item.mine && item.status !== 2) || role !== '用户'}}" class="button-row">
+    <button wx:if="{{item.mine && item.status === 0}}" class="secondary" data-id="{{item.teamId}}" data-action="start" bindtap="entryAction">开始参与</button>
+    <button wx:if="{{item.mine && item.status === 1}}" class="secondary" data-id="{{item.teamId}}" data-action="finish" bindtap="entryAction">完成参与</button>
+    <button wx:if="{{role !== '用户'}}" class="secondary" data-id="{{item.teamId}}" bindtap="score">录入成绩</button>
   </view>
 </view>
-<view wx:if="{{role === '管理员'}}"><view class="section">项目设置</view><form bindsubmit="saveForm" class="card"><text class="field-label">项目名称</text><input name="name" value="{{project.name}}" maxlength="30"/><text class="field-label">项目规则</text><textarea name="description" value="{{project.description}}" maxlength="500"/><text class="field-label">详细地址 / 楼层 / 入口</text><input name="address" value="{{project.address}}" maxlength="120"/><text class="field-label">计划时间</text><view class="button-row"><picker mode="time" value="{{project.start}}" data-field="start" bindchange="changeTime"><view class="pill">开始 {{project.start}} ⌄</view></picker><picker mode="time" value="{{project.end}}" data-field="end" bindchange="changeTime"><view class="pill">结束 {{project.end}} ⌄</view></picker></view><button class="primary" form-type="submit" style="margin-top:30rpx">保存项目资料</button></form><button class="danger" bindtap="deleteProject">删除项目</button></view></view>
+</block>
+</view>

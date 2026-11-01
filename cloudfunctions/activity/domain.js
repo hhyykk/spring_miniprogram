@@ -15,7 +15,7 @@ function validate(s) {
   check(Array.isArray(s.projects) && s.projects.length <= 60)
   unique(s.members); unique(s.teams); unique(s.projects)
   s.members.forEach(m => {
-    keys(m, 'id name avatar teamId'); text(m.id, 64, false); text(m.name, 30, false); media(m.avatar)
+    keys(m, 'id name avatar teamId'); text(m.id, 64, false); text(m.name, 30); media(m.avatar)
     check(m.teamId === '' || s.teams.some(t => t.id === m.teamId))
   })
   s.teams.forEach(t => {
@@ -44,16 +44,49 @@ function roleFor(openid, env = process.env) {
   return list('ADMIN_OPENIDS').includes(openid) ? '管理员' : list('REFEREE_OPENIDS').includes(openid) ? '裁判' : '用户'
 }
 const memberId = openid => createHash('sha256').update(openid).digest('hex')
+function progressStatus(entries) {
+  if (!entries.length || entries.every(e => e.status === 0)) return 0
+  return entries.every(e => e.status === 2) ? 2 : 1
+}
+function normalizeState(state) {
+  const result = JSON.parse(JSON.stringify(state))
+  result.members.forEach(m => { if (m.name === '微信用户') m.name = '' })
+  result.projects.forEach(p => {
+    p.status = progressStatus(p.entries)
+    if (p.address === '请选择精确地点') p.address = ''
+  })
+  return result
+}
 function authorize(before, after, id, role) {
+  before = normalizeState(before)
+  after = normalizeState(after)
   validate(after)
   const ordered = s => ({ ...s, members: [...s.members].sort((a, b) => a.id.localeCompare(b.id)) })
   before = ordered(before); after = ordered(after)
   check(equal(before.members.map(m => m.id), after.members.map(m => m.id)), '不能新增或删除其他用户')
+  const actor = before.members.find(m => m.id === id)
+  check(actor, '登录身份无效')
+  // Every role follows the same participation boundary: a member controls only their own team.
+  after.projects.forEach(p => {
+    const oldProject = before.projects.find(item => item.id === p.id)
+    p.entries.forEach(e => {
+      const old = oldProject?.entries.find(item => item.teamId === e.teamId)
+      if (!old) {
+        check(e.status === 0 && e.startedAt === 0 && e.finishedAt === 0 && e.score === null, '新参赛记录必须从待参与开始')
+      } else if (old.status !== e.status || old.startedAt !== e.startedAt || old.finishedAt !== e.finishedAt) {
+        check(actor.teamId === e.teamId, '只能操作自己队伍的参赛状态')
+        check((old.status === 0 && e.status === 1) || (old.status === 1 && e.status === 2), '无效的参赛状态变更')
+        if (e.status === 1) check(e.startedAt > 0 && e.finishedAt === old.finishedAt)
+        else check(e.startedAt === old.startedAt && e.finishedAt >= e.startedAt)
+      }
+    })
+  })
+  const nextActor = after.members.find(m => m.id === id)
+  if (nextActor.teamId && nextActor.teamId !== actor.teamId) check(nextActor.name.trim(), '请先填写姓名')
   if (role === '管理员') return
   const expected = JSON.parse(JSON.stringify(before))
   const me = expected.members.find(m => m.id === id)
   const nextMe = after.members.find(m => m.id === id)
-  check(me && nextMe, '登录身份无效')
   me.name = nextMe.name; me.avatar = nextMe.avatar
   if (me.teamId !== nextMe.teamId) {
     check(!me.teamId || !nextMe.teamId, '请先退出当前队伍')
@@ -69,24 +102,19 @@ function authorize(before, after, id, role) {
       if (next) { t.name = next.name; t.avatar = next.avatar }
     }
   })
-  if (role === '裁判') {
-    expected.projects.forEach(p => {
-      const next = after.projects.find(n => n.id === p.id)
-      check(next, '裁判不能删除项目')
-      p.status = next.status
-      p.entries.forEach(e => {
-        const n = next.entries.find(item => item.teamId === e.teamId)
-        check(n, '参赛记录缺失')
-        if (e.status !== n.status) {
-          check((p.status === 1 && e.status === 0 && n.status === 1) || (e.status === 1 && n.status === 2), '无效的参赛状态变更')
-          if (n.status === 1) { check(n.finishedAt === e.finishedAt && n.startedAt > 0); e.startedAt = n.startedAt }
-          else { check(n.startedAt === e.startedAt && n.finishedAt >= e.startedAt); e.finishedAt = n.finishedAt }
-          e.status = n.status
-        }
-        e.score = n.score
-      })
+  expected.projects.forEach(p => {
+    const next = after.projects.find(n => n.id === p.id)
+    check(next, '没有权限删除项目')
+    p.entries.forEach(e => {
+      const n = next.entries.find(item => item.teamId === e.teamId)
+      check(n, '参赛记录缺失')
+      if (e.teamId === actor.teamId) {
+        e.status = n.status; e.startedAt = n.startedAt; e.finishedAt = n.finishedAt
+      }
+      if (role === '裁判') e.score = n.score
     })
-  }
+    p.status = progressStatus(p.entries)
+  })
   check(equal(expected, after), '没有权限执行此操作，请联系管理员')
 }
-module.exports = { validate, authorize, memberId, roleFor }
+module.exports = { validate, authorize, memberId, roleFor, normalizeState, progressStatus }

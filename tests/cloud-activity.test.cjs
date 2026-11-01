@@ -109,3 +109,41 @@ test('伪造客户端管理员身份不会获得权限', async () => {
   assert.equal(result.ok, false)
   assert.equal((await app.call({ action: 'read' })).state.activity, '团建')
 })
+test('普通队员可从待参与开始本队项目，无须管理员先启动项目', () => {
+  const before = fixture(); before.projects[0].status = 0
+  const after = clone(before)
+  const e = after.projects[0].entries[0]; e.status = 1; e.startedAt = 100
+  assert.doesNotThrow(() => domain.authorize(before, after, 'b', '用户'))
+  assert.equal(domain.normalizeState(after).projects[0].status, 1)
+  const done = clone(after); done.projects[0].entries[0].status = 2; done.projects[0].entries[0].finishedAt = 200
+  assert.doesNotThrow(() => domain.authorize(after, done, 'b', '用户'))
+  assert.equal(domain.normalizeState(done).projects[0].status, 2)
+})
+test('管理员和裁判也不能更改其他队伍的参赛状态或时间', () => {
+  const before = fixture(); before.members.find(m => m.id === 'b').teamId = ''
+  const after = clone(before); after.projects[0].entries[0].status = 1; after.projects[0].entries[0].startedAt = 100
+  for (const role of ['用户', '管理员', '裁判']) assert.throws(() => domain.authorize(before, after, 'b', role), /自己队伍/)
+})
+test('项目整体旧状态不能独立操控，由队伍进度推导', () => {
+  const before = fixture(); const after = clone(before); after.projects[0].status = 2
+  assert.equal(domain.normalizeState(after).projects[0].status, 0)
+  assert.doesNotThrow(() => domain.authorize(before, after, 'b', '用户'))
+  assert.equal(domain.progressStatus([{ status: 2 }, { status: 0 }]), 1)
+  assert.equal(domain.progressStatus([]), 0)
+})
+test('兼容迁移清除旧默认文案，保留姓名、媒体、成绩', () => {
+  const state = fixture(); state.members[0].name = '微信用户'; state.projects[0].address = '请选择精确地点'
+  state.projects[0].entries[0].score = 92; state.members[1].avatar = 'cloud://env/avatar.png'
+  const next = domain.normalizeState(state)
+  assert.equal(next.members[0].name, '')
+  assert.equal(next.members[1].name, '乙')
+  assert.equal(next.projects[0].address, '')
+  assert.equal(next.projects[0].entries[0].score, 92)
+  assert.equal(next.members[1].avatar, 'cloud://env/avatar.png')
+  assert.equal(state.members[0].name, '微信用户')
+})
+test('未填写姓名的用户不能自行加入队伍', () => {
+  const before = fixture(); before.members[1].teamId = ''; before.members[1].name = ''
+  const after = clone(before); after.members[1].teamId = 't'
+  assert.throws(() => domain.authorize(before, after, 'b', '用户'), /姓名/)
+})

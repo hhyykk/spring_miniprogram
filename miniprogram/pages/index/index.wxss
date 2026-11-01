@@ -43,3 +43,13 @@
 }
 .home-page > .topline, .home-page .hero, .home-page .stats, .home-page .project-toolbar { flex-shrink: 0; }
 .project-list { flex: 1; height: 0; min-height: 0; width: 100%; }
+.profile-name-field { text-align: left; }
+.profile-save { width: 100%; margin-top: 24rpx; }
+.profile-notice { margin-bottom: 16rpx; flex-shrink: 0; }
+.team-editor { border: 1rpx solid var(--border); }
+.compact { min-height: 88rpx; padding: 16rpx 24rpx; flex-shrink: 0; }
+.member-result { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; padding: 20rpx 0; border-bottom: 1rpx solid var(--border); }
+.member-result > .row { min-width: 0; }
+.member-result .small { word-break: break-all; }
+button.compact { width: auto; }
+button.profile-save { width: 100%; }
