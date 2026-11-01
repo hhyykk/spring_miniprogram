@@ -1,0 +1,10 @@
+.scene-wrap { height: 640rpx; position: relative; border-radius: 24rpx; overflow: hidden; margin: 24rpx 0; background: #e9edef; }
+canvas { width: 100%; height: 100%; }
+.error { position: absolute; top: 30%; padding: 32rpx; text-align: center; color: var(--text); line-height: 1.6; font-size: 30rpx; }
+.legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16rpx; color: #536546; font-size: 28rpx; margin: 28rpx 0; }
+.legend text:nth-child(2) { color: #845a3e; }
+.legend text:nth-child(3) { color: #386d78; }
+.legend text:nth-child(4) { color: #75633d; }
+.between > text { flex: 1; min-width: 0; }
+.between .row { flex-shrink: 0; }
+.row button { width: 92rpx; padding: 20rpx; font-size: 34rpx; }

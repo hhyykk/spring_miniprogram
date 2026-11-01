@@ -1,0 +1,45 @@
+.topline { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 24rpx; gap: 16rpx; }
+.role { border-radius: 16rpx; padding: 20rpx; font-size: 28rpx; background: var(--surface); white-space: nowrap; }
+.hero { background: var(--surface); border-radius: 24rpx 24rpx 0 0; padding: 32rpx; margin-top: 20rpx; }
+.hero-title { font-size: 40rpx; font-weight: 650; line-height: 1.4; word-break: break-all; }
+.stats { display: flex; padding: 24rpx 0 32rpx; background: var(--surface); border-radius: 0 0 24rpx 24rpx; margin-bottom: 24rpx; }
+.stats > view { flex: 1; text-align: center; font-size: 28rpx; color: var(--muted); }
+.stat-number { display: block; font-size: 48rpx; color: var(--text); font-weight: 500; margin-bottom: 6rpx; font-variant-numeric: tabular-nums; }
+.project-card { background: var(--surface); border-radius: 24rpx; padding: 28rpx; margin-bottom: 16rpx; }
+.project-card:active { background: #e9edef; }
+.project-info { display: flex; flex-direction: column; gap: 20rpx; }
+.project-info .bold { font-size: 32rpx; min-width: 0; }
+.project-info .small { font-size: 28rpx; }
+.project-info > .between:last-child { flex-wrap: wrap; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; padding: 12rpx 20rpx calc(12rpx + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1rpx solid var(--border); z-index: 10; }
+.nav-item { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--muted); font-size: 28rpx; position: relative; min-height: 100rpx; }
+.nav-icon { display: none; }
+.active { color: var(--text); font-weight: 650; }
+.nav-dot { height: 4rpx; width: 32rpx; border-radius: 4rpx; background: var(--accent); position: absolute; bottom: 8rpx; }
+.members { display: flex; flex-wrap: wrap; gap: 16rpx; margin: 24rpx 0; }
+.member { display: flex; align-items: center; gap: 10rpx; font-size: 28rpx; padding: 16rpx 0; min-height: 88rpx; }
+.member-avatar { width: 56rpx; height: 56rpx; border-radius: 50%; font-size: 28rpx; }
+.ranking { display: flex; align-items: center; gap: 20rpx; }
+.rank-number { font-size: 36rpx; color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+.rank-info { flex: 1; min-width: 0; }
+.score { font-size: 44rpx; color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.score text { font-size: 28rpx; margin-left: 8rpx; color: var(--muted); }
+.profile { text-align: center; padding: 40rpx; }
+.avatar-button { padding: 0; background: none; width: 140rpx; margin: 0 auto 24rpx; }
+.profile-avatar { width: 140rpx; height: 140rpx; border-radius: 50%; font-size: 56rpx; }
+.section .small { min-height: 88rpx; display: flex; align-items: center; }
+.activity-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 20rpx; }
+.activity-title-row .hero-title { flex: 1; min-width: 0; }
+.activity-edit { flex-shrink: 0; min-height: 88rpx; padding: 20rpx 24rpx; }
+.project-toolbar { display: flex; justify-content: flex-end; margin: 8rpx 0 24rpx; }
+.rank-progress { margin-top: 18rpx; width: 100%; }
+
+.home-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
+}
+.home-page > .topline, .home-page .hero, .home-page .stats, .home-page .project-toolbar { flex-shrink: 0; }
+.project-list { flex: 1; height: 0; min-height: 0; width: 100%; }

@@ -1,0 +1,28 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/project/project",
+    "pages/location/location",
+    "pages/scene/scene",
+    "pages/logs/logs"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "活动",
+    "navigationBarBackgroundColor": "#f3f4f5"
+  },
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "lazyCodeLoading": "requiredComponents",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于在项目地图上显示当前位置，以及选择项目地点和打开导航"
+    }
+  },
+  "requiredPrivateInfos": [
+    "chooseLocation",
+    "getLocation",
+    "startLocationUpdate",
+    "onLocationChange"
+  ]
+}
