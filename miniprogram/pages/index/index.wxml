@@ -52,7 +52,6 @@
 <view wx:if="{{statsPanelType}}" class="stats-mask" bindtap="closeStatsPanel">
   <view class="stats-panel" catchtap="stopPanelTap" role="dialog" aria-label="{{statsPanelTitle}}">
     <view class="stats-panel-header"><view class="stats-panel-title">{{statsPanelTitle}}</view><button class="stats-panel-close secondary" bindtap="closeStatsPanel" aria-label="关闭项目列表">关闭</button></view>
-    <view wx:if="{{statsPanelTeam}}" class="small muted stats-panel-team">{{statsPanelTeam}}</view>
     <scroll-view class="stats-panel-list" style="height: {{statsProjects.length ? statsProjects.length * 161 : 200}}rpx" scroll-y="true">
       <view wx:for="{{statsProjects}}" wx:key="id" class="stats-project" data-id="{{item.id}}" bindtap="openStatsProject" role="button" aria-label="查看{{item.name}}详情">
         <view class="stats-project-info"><view class="bold">{{item.name}}</view><view class="small muted">{{entryStatuses[item.status]}}</view></view>
