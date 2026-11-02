@@ -25,3 +25,14 @@ button.member-tab.selected { color: var(--text); border-bottom-color: var(--acce
 button.member-action { width: auto; min-height: 88rpx; padding: 16rpx 20rpx; margin: 0; flex-shrink: 0; font-size: 28rpx; background: var(--raised); color: var(--muted); }
 button.member-add { color: var(--accent); background: var(--team-soft); }
 .team-detail button:focus-visible, .team-avatar-control:focus-visible, .team-slogan:focus-visible { outline: 4rpx solid var(--team-focus); outline-offset: 4rpx; }
+.group-section { background: var(--surface); border-radius: 24rpx; padding: 28rpx; margin-bottom: 24rpx; }
+.group-qr-row { display: flex; align-items: center; gap: 24rpx; margin: 24rpx 0; }
+.group-qr-thumbnail { width: 144rpx; height: 144rpx; flex-shrink: 0; }
+.group-qr-copy { flex: 1; min-width: 0; overflow-wrap: break-word; }
+.group-qr-title { margin-bottom: 8rpx; font-weight: 600; }
+.group-qr-empty { margin: 20rpx 0 24rpx; }
+button.group-qr-open { width: 100%; margin: 0; }
+.group-qr-actions { display: flex; gap: 20rpx; margin-top: 20rpx; }
+.group-qr-actions button { min-height: 88rpx; margin: 0; padding: 20rpx 24rpx; font-size: 28rpx; }
+.group-qr-actions .secondary { flex: 1; min-width: 0; }
+button.group-qr-remove { width: auto; background: var(--surface); color: var(--muted); flex-shrink: 0; }

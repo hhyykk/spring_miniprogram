@@ -157,3 +157,16 @@ test('队伍口号兼容旧数据，队长可改本队口号，其他成员不�
   const invalid = clone(before); invalid.teams[0].slogan = '口'.repeat(101)
   assert.throws(() => domain.authorize(before, invalid, 'a', '管理员'))
 })
+
+test('群二维码兼容旧数据，仅管理员或本队队长可修改且必须为云存储文件', () => {
+  const before = fixture()
+  assert.equal(domain.normalizeState(before).teams[0].groupQr, '')
+  const after = clone(before); after.teams[0].groupQr = 'cloud://test/group-qr.png'
+  assert.doesNotThrow(() => domain.authorize(before, after, 'a', '用户'))
+  assert.doesNotThrow(() => domain.authorize(before, after, 'b', '管理员'))
+  assert.throws(() => domain.authorize(before, after, 'b', '用户'))
+  after.teams[0].groupQr = 'wxfile://tmp/qr.png'
+  assert.throws(() => domain.authorize(before, after, 'a', '管理员'))
+  after.teams[0].groupQr = ''
+  assert.doesNotThrow(() => domain.authorize(before, after, 'a', '用户'))
+})

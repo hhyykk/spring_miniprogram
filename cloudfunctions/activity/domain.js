@@ -19,7 +19,7 @@ function validate(s) {
     check(m.teamId === '' || s.teams.some(t => t.id === m.teamId))
   })
   s.teams.forEach(t => {
-    keys(t, t.slogan === undefined ? 'id name avatar captainId' : 'id name avatar captainId slogan'); if (t.slogan !== undefined) text(t.slogan, 100); text(t.id, 64, false); text(t.name, 30, false); media(t.avatar)
+    keys(t, 'id name avatar captainId' + (t.slogan === undefined ? '' : ' slogan') + (t.groupQr === undefined ? '' : ' groupQr')); if (t.slogan !== undefined) text(t.slogan, 100); if (t.groupQr !== undefined) media(t.groupQr); text(t.id, 64, false); text(t.name, 30, false); media(t.avatar)
     check(t.captainId === '' || s.members.some(m => m.id === t.captainId && m.teamId === t.id))
   })
   s.projects.forEach(p => {
@@ -50,7 +50,7 @@ function progressStatus(entries) {
 }
 function normalizeState(state) {
   const result = JSON.parse(JSON.stringify(state))
-  result.teams.forEach(t => { if (t.slogan === undefined) t.slogan = '' })
+  result.teams.forEach(t => { if (t.slogan === undefined) t.slogan = ''; if (t.groupQr === undefined) t.groupQr = '' })
   result.members.forEach(m => { if (m.name === '微信用户') m.name = '' })
   result.projects.forEach(p => {
     p.status = progressStatus(p.entries)
@@ -100,7 +100,7 @@ function authorize(before, after, id, role) {
   expected.teams.forEach(t => {
     if (t.captainId === id) {
       const next = after.teams.find(item => item.id === t.id)
-      if (next) { t.name = next.name; t.avatar = next.avatar; t.slogan = next.slogan }
+      if (next) { t.name = next.name; t.avatar = next.avatar; t.slogan = next.slogan; t.groupQr = next.groupQr }
     }
   })
   expected.projects.forEach(p => {

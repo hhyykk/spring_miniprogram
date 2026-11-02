@@ -1,7 +1,7 @@
 import { load, save, sync, Member, Team, editText, notify, persistFile, confirm } from '../../utils/store'
 interface Candidate extends Member { teamName: string; selected: boolean }
 Page({
-  data: { team: null as Team | null, role: '', canEdit: false, memberScope: 'current', loading: true, members: [] as Member[], teamSearch: '', memberCandidates: [] as Candidate[], editingTeamId: '', savingMember: false, cloudError: '' },
+  data: { team: null as Team | null, role: '', canEdit: false, memberScope: 'current', loading: true, uploadingQr: false, openingQr: false, members: [] as Member[], teamSearch: '', memberCandidates: [] as Candidate[], editingTeamId: '', savingMember: false, cloudError: '' },
   teamId: '',
   poll: null as ReturnType<typeof setInterval> | null,
   onLoad(query: Record<string, string>) { this.teamId = query.id },
@@ -24,6 +24,46 @@ Page({
     this.setData({ team, canEdit: !!team && (state.role === '管理员' || team.captainId === state.members[0].id), role: state.role, members, memberCandidates, editingTeamId: this.teamId })
   },
   searchTeamMembers(e: WechatMiniprogram.Input) { this.setData({ teamSearch: e.detail.value }); this.refresh() },
+  uploadGroupQr() {
+    const state = load()
+    const team = state.teams.find(t => t.id === this.teamId)
+    if (!team || this.data.uploadingQr || (state.role !== '管理员' && team.captainId !== state.members[0].id)) return
+    wx.chooseMedia({ count: 1, mediaType: ['image'], success: async result => {
+      this.setData({ uploadingQr: true })
+      try {
+        const groupQr = await persistFile(result.tempFiles[0].tempFilePath)
+        const latest = load()
+        const target = latest.teams.find(t => t.id === this.teamId)
+        if (!target || (latest.role !== '管理员' && target.captainId !== latest.members[0].id)) return
+        target.groupQr = groupQr
+        if (await save(latest)) { this.refresh(); notify('群二维码已更新') }
+      } catch { notify('二维码上传失败，请重试') }
+      finally { this.setData({ uploadingQr: false }) }
+    } })
+  },
+  async viewGroupQr() {
+    const team = load().teams.find(t => t.id === this.teamId)
+    if (!team?.groupQr) return notify('队长尚未上传群二维码')
+    if (this.data.openingQr) return
+    this.setData({ openingQr: true })
+    try {
+      const file = await wx.cloud.downloadFile({ fileID: team.groupQr })
+      wx.previewImage({ urls: [file.tempFilePath], current: file.tempFilePath })
+    } catch { notify('二维码加载失败，请重试或联系队长更换') }
+    finally { this.setData({ openingQr: false }) }
+  },
+  removeGroupQr() {
+    const state = load()
+    const team = state.teams.find(t => t.id === this.teamId)
+    if (!team?.groupQr || (state.role !== '管理员' && team.captainId !== state.members[0].id)) return
+    confirm('移除群二维码', '移除后，成员将无法在此查看入群二维码。', async () => {
+      const latest = load()
+      const target = latest.teams.find(t => t.id === this.teamId)
+      if (!target || (latest.role !== '管理员' && target.captainId !== latest.members[0].id)) return
+      target.groupQr = ''
+      if (await save(latest)) this.refresh()
+    })
+  },
   changeMemberScope(e: WechatMiniprogram.TouchEvent) {
     const scope = e.currentTarget.dataset.scope
     if (scope !== 'current' && scope !== 'available') return

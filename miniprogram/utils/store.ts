@@ -1,6 +1,6 @@
 export type Role = '用户' | '管理员' | '裁判'
 export interface Member { id: string; name: string; avatar: string; teamId: string }
-export interface Team { id: string; name: string; avatar: string; captainId: string; slogan?: string }
+export interface Team { id: string; name: string; avatar: string; captainId: string; slogan?: string; groupQr?: string }
 export interface Entry { teamId: string; status: number; score: number | null; startedAt: number; finishedAt: number }
 export interface Project { id: string; name: string; description: string; address: string; latitude: number; longitude: number; start: string; end: string; status: number; images: string[]; video: string; spot: number; entries: Entry[] }
 export interface State { role: Role; activity: string; date: string; members: Member[]; teams: Team[]; projects: Project[]; revision: number; openid: string }
