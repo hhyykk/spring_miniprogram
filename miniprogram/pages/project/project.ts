@@ -17,7 +17,20 @@ Page({
       this.setData({ descriptionDraft: project.description, descriptionBase: project.description, descriptionDirty: false, descriptionError: '' })
     }
     if (project.address === '请选择精确地点') project.address = ''
-    this.setData({ project, entries: project.entries.map(e => ({ ...e, name: state.teams.find(t => t.id === e.teamId)?.name || '队伍', mine: e.teamId === state.members[0].teamId })), role: state.role, markers: [{
+    const sortedEntries = project.entries.map(entry => ({
+      ...entry,
+      name: state.teams.find(team => team.id === entry.teamId)?.name || '队伍',
+      mine: entry.teamId === state.members[0].teamId,
+    })).sort((a, b) => {
+      if (a.score === null) return b.score === null ? 0 : 1
+      if (b.score === null) return -1
+      return b.score - a.score
+    })
+    const entries = sortedEntries.map(entry => ({
+      ...entry,
+      rank: entry.score === null ? null : sortedEntries.findIndex(item => item.score === entry.score) + 1,
+    }))
+    this.setData({ project, entries, role: state.role, markers: [{
       id: 99, iconPath: '/assets/pin.png', width: 28, height: 36,
       latitude: project.latitude, longitude: project.longitude, title: project.name,
     }], mapPoints: [{ latitude: project.latitude, longitude: project.longitude }] })
@@ -112,7 +125,7 @@ Page({
   },
   switchDetailTab(e: WechatMiniprogram.TouchEvent) {
     const detailTab = String(e.currentTarget.dataset.tab)
-    if (detailTab !== 'detail' && detailTab !== 'progress') return
+    if (detailTab !== 'detail' && detailTab !== 'ranking') return
     this.setData({ detailTab })
   },
   async entryAction(e: WechatMiniprogram.TouchEvent) {

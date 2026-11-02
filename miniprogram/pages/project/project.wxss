@@ -19,3 +19,8 @@ button.description-save, button.description-reload, button.description-cancel { 
 .editable-title, .editable-description { cursor: pointer; }
 .editable-description { min-height: 88rpx; padding: 12rpx 0; }
 button.project-delete { display: block; width: 100%; margin-top: 36rpx; }
+
+.project-rank-row { display: flex; align-items: center; gap: 20rpx; margin-bottom: 12rpx; }
+.project-rank-number { min-width: 56rpx; font-size: 36rpx; font-weight: 600; font-variant-numeric: tabular-nums; }
+.project-rank-team { flex: 1; min-width: 0; word-break: break-all; }
+.project-rank-score { flex-shrink: 0; font-weight: 600; font-variant-numeric: tabular-nums; }

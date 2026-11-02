@@ -87,3 +87,20 @@ test('说明默认阅读，只有管理员点击可展开，取消与保存后�
   viewer.page.projectId = 'p'; viewer.page.refresh(); viewer.page.beginDescriptionEdit()
   assert.equal(viewer.page.data.descriptionEditing, false)
 })
+
+test('项目排行榜只按本项目得分降序，同分并列，零分参与排名，待评分置后', () => {
+  const app = harness('../miniprogram/pages/project/project.ts')
+  app.change(state => {
+    state.teams = ['t', 'b', 'c', 'd', 'e'].map(id => ({ id, name: id, captainId: '', avatar: '' }))
+    state.projects[0].entries = [null, 0, 80, 80, 20].map((score, index) => ({ teamId: state.teams[index].id, score, status: 0, startedAt: 0, finishedAt: 0 }))
+    state.projects.push({ ...state.projects[0], id: 'other', entries: [{ teamId: 'b', score: 100 }] })
+  })
+  app.page.projectId = 'p'; app.page.refresh()
+  assert.deepEqual(clone(app.page.data.entries).map(entry => [entry.teamId, entry.rank, entry.score]), [['c', 1, 80], ['d', 1, 80], ['e', 3, 20], ['b', 4, 0], ['t', null, null]])
+  app.change(state => { state.projects[0].entries[0].score = 90 })
+  app.page.refresh()
+  assert.equal(app.page.data.entries[0].teamId, 't')
+  assert.equal(app.page.data.entries[0].mine, true)
+  app.page.switchDetailTab({ currentTarget: { dataset: { tab: 'ranking' } } })
+  assert.equal(app.page.data.detailTab, 'ranking')
+})
