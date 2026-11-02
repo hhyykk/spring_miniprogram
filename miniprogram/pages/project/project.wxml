@@ -27,12 +27,10 @@
 <view class="card project-model">
   <view class="section" style="margin-top:0">3D 场地示意</view>
   <view class="model-preview" bindtap="scene" role="button" aria-label="全屏预览 3D 模型">
-    <image wx:if="{{modelPreview}}" src="{{modelPreview}}" mode="aspectFit" class="model-image"/>
-    <view wx:else class="model-placeholder">{{previewError || '正在生成模型预览…'}}</view>
+    <image src="{{modelPreview}}" mode="aspectFit" class="model-image"/>
     <view class="model-open">全屏预览</view>
   </view>
 </view>
-<canvas type="webgl" id="model-preview-canvas" class="preview-canvas"/>
 <button wx:if="{{role === '管理员'}}" class="danger project-delete" bindtap="deleteProject">删除项目</button>
 </block>
 <block wx:if="{{detailTab === 'progress'}}">

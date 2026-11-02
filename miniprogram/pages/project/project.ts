@@ -1,17 +1,13 @@
-import { createVenue } from '../../utils/venue'
 import { load, save, sync, Project, notify, confirm } from '../../utils/store'
-interface PreviewCanvas { width: number; height: number }
-interface PreviewVenue { dispose(): void }
 Page({
-  data: { project: null as Project | null, role: '', detailTab: 'detail', descriptionEditing: false, descriptionDraft: '', descriptionBase: '', descriptionDirty: false, descriptionSaving: false, descriptionError: '', entries: [] as object[], clock: '', countdown: '', markers: [] as object[], mapPoints: [] as { latitude: number; longitude: number }[], hasUserLocation: false, locationError: '', modelPreview: '', previewError: '' },
-  projectId: '', visible: false, tracking: false, locationListener: null as ((position: { latitude: number; longitude: number }) => void) | null, ready: false, previewVenue: null as PreviewVenue | null,
+  data: { project: null as Project | null, role: '', detailTab: 'detail', descriptionEditing: false, descriptionDraft: '', descriptionBase: '', descriptionDirty: false, descriptionSaving: false, descriptionError: '', entries: [] as object[], clock: '', countdown: '', markers: [] as object[], mapPoints: [] as { latitude: number; longitude: number }[], hasUserLocation: false, locationError: '', modelPreview: '/assets/venue-preview.png' },
+  projectId: '', visible: false, tracking: false, locationListener: null as ((position: { latitude: number; longitude: number }) => void) | null,
   onLoad(query: Record<string, string>) { this.projectId = query.id },
   renderedRevision: -1,
   poll: null as ReturnType<typeof setInterval> | null,
-  async reload() { try { await sync(); if (load().revision !== this.renderedRevision || load().role !== this.data.role) this.refresh(); if (this.ready && !this.data.modelPreview) this.renderModelPreview() } catch { notify('云端连接失败，请返回重试') } },
+  async reload() { try { await sync(); if (load().revision !== this.renderedRevision || load().role !== this.data.role) this.refresh() } catch { notify('云端连接失败，请返回重试') } },
   onShow() { this.visible = true; this.reload(); this.locateUser(); this.poll = setInterval(() => this.reload(), 10000) },
-  onReady() { this.ready = true; this.renderModelPreview() },
-  onHide() { this.stopTracking(); if (this.poll) clearInterval(this.poll) }, onUnload() { this.stopTracking(); if (this.poll) clearInterval(this.poll); this.previewVenue?.dispose() },
+  onHide() { this.stopTracking(); if (this.poll) clearInterval(this.poll) }, onUnload() { this.stopTracking(); if (this.poll) clearInterval(this.poll) },
   refresh() {
     const state = load()
     this.renderedRevision = state.revision
@@ -71,36 +67,6 @@ Page({
     if (this.tracking) wx.stopLocationUpdate({})
     this.tracking = false
   },
-  renderModelPreview() {
-    if (!this.data.project || this.data.detailTab !== 'detail') return
-    this.setData({ modelPreview: '', previewError: '' })
-    wx.createSelectorQuery().in(this).select('#model-preview-canvas')
-      .fields({ node: true, size: true })
-      .exec((results: { node: PreviewCanvas; width: number; height: number }[]) => {
-        const result = results[0]
-        if (!result || !result.node) {
-          this.setData({ previewError: '预览暂不可用，点击打开 3D 场地' })
-          return
-        }
-        try {
-          this.previewVenue?.dispose()
-          this.previewVenue = createVenue(result.node, result.width, result.height,
-            wx.getSystemInfoSync().pixelRatio, load().projects, this.projectId, true) as PreviewVenue
-          wx.canvasToTempFilePath({
-            canvas: result.node,
-            fileType: 'png',
-            success: image => this.setData({ modelPreview: image.tempFilePath }),
-            fail: () => this.setData({ previewError: '预览暂不可用，点击打开 3D 场地' }),
-            complete: () => { this.previewVenue?.dispose(); this.previewVenue = null },
-          }, this)
-        } catch (error) {
-          console.error('Model preview', error)
-          this.previewVenue?.dispose()
-          this.previewVenue = null
-          this.setData({ previewError: '预览暂不可用，点击打开 3D 场地' })
-        }
-      })
-  },
   async mutate(change: (project: Project) => void, adminOnly = true) { const state = load(); if (adminOnly ? state.role !== '管理员' : state.role === '用户') return false; const p = state.projects.find(item => item.id === this.projectId); if (!p) return false; change(p); if (!await save(state)) return false; this.refresh(); return true },
   beginDescriptionEdit() {
     if (load().role !== '管理员' || !this.data.project || this.data.descriptionEditing) return
@@ -147,7 +113,7 @@ Page({
   switchDetailTab(e: WechatMiniprogram.TouchEvent) {
     const detailTab = String(e.currentTarget.dataset.tab)
     if (detailTab !== 'detail' && detailTab !== 'progress') return
-    this.setData({ detailTab }, () => { if (detailTab === 'detail') this.renderModelPreview() })
+    this.setData({ detailTab })
   },
   async entryAction(e: WechatMiniprogram.TouchEvent) {
     const state = load()
