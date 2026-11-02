@@ -1,3 +1,5 @@
+/* Hallmark · v2.0.0 · scope: app · redesign: restyle · theme: project tokens · signature: team roster · system font · no motion */
+/* critique: cramped member metadata fixed with full-width roster rows; preserve shell and all handlers */
 .topline { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 24rpx; gap: 16rpx; }
 .role { border-radius: 16rpx; padding: 20rpx; font-size: 28rpx; background: var(--surface); white-space: nowrap; }
 .hero { background: var(--surface); border-radius: 24rpx 24rpx 0 0; padding: 32rpx; margin-top: 20rpx; }
@@ -64,3 +66,37 @@ button.stats-panel-close { width: auto; min-height: 88rpx; margin: 0 0 0 auto; p
 .stats-project-score { flex-shrink: 0; font-variant-numeric: tabular-nums; text-align: right; }
 .stats-project-arrow { flex-shrink: 0; font-size: 36rpx; color: var(--muted); }
 .stats-panel-footer { display: flex; justify-content: space-between; gap: 20rpx; flex-shrink: 0; padding-top: 24rpx; font-size: 28rpx; font-variant-numeric: tabular-nums; }
+
+.teams-screen { --team-accent-soft: #fceee5; --team-focus: #b94e16; }
+.teams-heading-row { display: flex; align-items: center; justify-content: space-between; gap: 24rpx; margin: 8rpx 0 32rpx; }
+.teams-heading-row > view { min-width: 0; flex: 1; }
+.teams-heading-row .heading { margin: 0 0 12rpx; }
+.teams-screen button { font-size: 28rpx; min-height: 88rpx; padding: 20rpx 24rpx; margin: 0; flex-shrink: 0; }
+button.teams-create { background: var(--text); color: var(--surface); width: auto; }
+.team-roster { background: var(--surface); border-radius: 24rpx; padding: 28rpx; margin-bottom: 24rpx; border: 2rpx solid var(--surface); }
+.team-roster-mine { border-color: var(--accent); }
+.team-roster-header { display: flex; align-items: center; gap: 20rpx; padding-bottom: 24rpx; }
+.team-roster-avatar { width: 96rpx; height: 96rpx; border-radius: 20rpx; flex-shrink: 0; }
+.team-initial { background: var(--raised); color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 34rpx; }
+.team-roster-title { flex: 1; min-width: 0; }
+.team-name { font-size: 36rpx; font-weight: 600; line-height: 1.35; overflow-wrap: break-word; min-width: 0; }
+.team-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8rpx 16rpx; font-size: 26rpx; color: var(--muted); margin-top: 10rpx; }
+.team-mine-label { color: var(--accent); }
+button.team-edit { width: auto; color: var(--text); background: var(--raised); }
+.team-people { border-top: 1rpx solid var(--border); }
+.team-person { display: flex; align-items: center; gap: 20rpx; min-height: 112rpx; padding: 20rpx 0; }
+.team-person + .team-person { border-top: 1rpx solid var(--border); }
+.team-person-avatar { width: 64rpx; height: 64rpx; border-radius: 50%; flex-shrink: 0; font-size: 28rpx; }
+.team-person-name { flex: 1; min-width: 0; overflow-wrap: break-word; }
+.team-captain { font-size: 26rpx; color: var(--accent); background: var(--team-accent-soft); padding: 6rpx 16rpx; border-radius: 8rpx; flex-shrink: 0; }
+.team-no-members { padding: 28rpx 0; }
+.team-roster-actions { display: flex; justify-content: flex-end; padding-top: 20rpx; border-top: 1rpx solid var(--border); }
+button.team-leave { background: var(--raised); color: var(--muted); width: auto; }
+button.team-join { width: 100%; }
+.team-allocation { margin-top: 40rpx; }
+.team-allocation .section { margin: 0 0 12rpx; }
+.team-allocation-row { display: flex; align-items: center; justify-content: space-between; gap: 24rpx; min-height: 100rpx; padding: 20rpx 0; border-bottom: 1rpx solid var(--border); overflow-wrap: break-word; }
+.team-allocation-row > text:first-child { flex: 1; min-width: 0; }
+.team-allocation-action { font-size: 28rpx; color: var(--accent); flex-shrink: 0; }
+.teams-screen button:focus-visible, .team-person:focus-visible, .team-allocation-row:focus-visible { outline: 4rpx solid var(--team-focus); outline-offset: 4rpx; }
+.teams-screen button:active, .team-allocation-row:active { opacity: .7; }
