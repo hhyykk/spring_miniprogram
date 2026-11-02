@@ -28,9 +28,6 @@
 .avatar-button { padding: 0; background: none; width: 140rpx; margin: 0 auto 24rpx; }
 .profile-avatar { width: 140rpx; height: 140rpx; border-radius: 50%; font-size: 56rpx; }
 .section .small { min-height: 88rpx; display: flex; align-items: center; }
-.activity-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 20rpx; }
-.activity-title-row .hero-title { flex: 1; min-width: 0; }
-.activity-edit { flex-shrink: 0; min-height: 88rpx; padding: 20rpx 24rpx; }
 .project-toolbar { display: flex; justify-content: flex-end; margin: 8rpx 0 24rpx; }
 .rank-progress { margin-top: 18rpx; width: 100%; }
 
@@ -41,7 +38,7 @@
   overflow: hidden;
   padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
 }
-.home-page > .topline, .home-page .hero, .home-page .stats, .home-page .project-toolbar { flex-shrink: 0; }
+.home-page > .topline, .home-page .hero, .home-page .stats { flex-shrink: 0; }
 .project-list { flex: 1; height: 0; min-height: 0; width: 100%; }
 .profile-name-field { text-align: left; }
 .profile-save { width: 100%; margin-top: 24rpx; }
@@ -53,3 +50,18 @@
 .member-result .small { word-break: break-all; }
 button.compact { width: auto; }
 button.profile-save { width: 100%; }
+.stats > view { min-height: 100rpx; }
+.stats > view:active { opacity: .65; }
+.stats-mask { position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-end; justify-content: center; background: rgba(0, 0, 0, .35); }
+.stats-panel { width: 100%; max-width: 1100rpx; max-height: 82vh; display: flex; flex-direction: column; padding: 28rpx 32rpx calc(28rpx + env(safe-area-inset-bottom)); border-radius: 24rpx 24rpx 0 0; background: var(--surface); }
+.stats-panel-header { display: flex; justify-content: space-between; align-items: center; gap: 20rpx; flex-shrink: 0; }
+.stats-panel-title { font-size: 36rpx; font-weight: 600; }
+button.stats-panel-close { width: auto; min-height: 88rpx; padding: 16rpx 24rpx; flex-shrink: 0; }
+.stats-panel-team { margin-top: 8rpx; margin-bottom: 12rpx; }
+.stats-panel-list { min-height: 120rpx; max-height: 54vh; flex-shrink: 1; }
+.stats-project { display: flex; align-items: center; gap: 20rpx; padding: 24rpx 0; min-height: 112rpx; border-bottom: 1rpx solid var(--border); }
+.stats-project:active { background: var(--raised); }
+.stats-project-info { flex: 1; min-width: 0; word-break: break-all; }
+.stats-project-score { flex-shrink: 0; font-variant-numeric: tabular-nums; text-align: right; }
+.stats-project-arrow { flex-shrink: 0; font-size: 36rpx; color: var(--muted); }
+.stats-panel-footer { display: flex; justify-content: space-between; gap: 20rpx; flex-shrink: 0; padding-top: 24rpx; font-size: 28rpx; font-variant-numeric: tabular-nums; }

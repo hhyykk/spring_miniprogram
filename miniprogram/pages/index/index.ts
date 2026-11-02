@@ -1,8 +1,10 @@
 import { load, save, sync, newProject, editText, confirm, notify, persistFile, entryStatuses, teamStatus, Project, Member } from '../../utils/store'
 interface ProjectCard extends Project { participationStatus: number; hasTeam: boolean }
+type StatsPanelType = '' | 'pending' | 'completed' | 'score'
+interface StatsProject { id: string; name: string; status: number; score: number | null }
 interface MemberCandidate extends Member { teamName: string; selected: boolean }
 Page({
-  data: { state: load(), tab: 'home', tabs: [{ id: 'home', icon: '◈', name: '活动' }, { id: 'teams', icon: '队', name: '队伍' }, { id: 'rank', icon: '▥', name: '排行榜' }, { id: 'me', icon: '我', name: '我的' }], entryStatuses, projects: [] as ProjectCard[], teams: [] as object[], ranking: [] as object[], me: load().members[0], pending: 0, completed: 0, totalScore: 0, scrollSpacerHeight: 0, projectScrollTarget: '', cloudError: '', nameDraft: '', editingTeamId: '', editingTeamName: '', editingTeamAvatar: '', teamSearch: '', memberCandidates: [] as MemberCandidate[] },
+  data: { state: load(), tab: 'home', tabs: [{ id: 'home', icon: '◈', name: '活动' }, { id: 'teams', icon: '队', name: '队伍' }, { id: 'rank', icon: '▥', name: '排行榜' }, { id: 'me', icon: '我', name: '我的' }], entryStatuses, projects: [] as ProjectCard[], teams: [] as object[], ranking: [] as object[], me: load().members[0], pending: 0, completed: 0, totalScore: 0, statsPanelType: '' as StatsPanelType, statsPanelTitle: '', statsPanelTeam: '', statsProjects: [] as StatsProject[], scrollSpacerHeight: 0, projectScrollTarget: '', cloudError: '', nameDraft: '', editingTeamId: '', editingTeamName: '', editingTeamAvatar: '', teamSearch: '', memberCandidates: [] as MemberCandidate[] },
   poll: null as ReturnType<typeof setInterval> | null,
   onShow() { this.reload(); this.poll = setInterval(() => this.reload(), 10000) },
   onHide() { if (this.poll) clearInterval(this.poll); this.poll = null },
@@ -40,6 +42,7 @@ Page({
       : 0
     if (this.data.me.id !== state.members[0].id || this.data.nameDraft === this.data.me.name) this.setData({ nameDraft: state.members[0].name === '微信用户' ? '' : state.members[0].name })
     this.updateMemberCandidates(state.members, state.teams)
+    this.updateStatsPanel(state, projects)
     this.setData({ state, projects, teams, ranking: sorted.map((t, i) => ({ ...t, rank: sorted.findIndex(s => s.score === t.score) + 1, order: i })), me: state.members[0], pending, completed, totalScore }, () => this.scrollToCurrentProject())
   },
   scrollToCurrentProject() {
@@ -68,6 +71,31 @@ Page({
       if (this.data.tab === 'home') this.scrollToCurrentProject()
       else wx.pageScrollTo({ scrollTop: 0, duration: 0 })
     })
+  },
+  openStatsPanel(e: WechatMiniprogram.TouchEvent) {
+    const type = e.currentTarget.dataset.type as StatsPanelType
+    if (type !== 'pending' && type !== 'completed' && type !== 'score') return
+    this.setData({ statsPanelType: type })
+    this.updateStatsPanel(load(), this.data.projects)
+  },
+  updateStatsPanel(state: ReturnType<typeof load>, projects: Project[]) {
+    const type = this.data.statsPanelType
+    if (!type) return
+    const me = state.members[0]
+    const team = state.teams.find(t => t.id === me.teamId)
+    const rows: StatsProject[] = []
+    if (team) projects.forEach(project => {
+      const entry = project.entries.find(e => e.teamId === team.id) || { status: 0, score: null }
+      if ( (type === 'pending' && entry.status !== 0) || (type === 'completed' && entry.status !== 2)) return
+      rows.push({ id: project.id, name: project.name, status: entry.status, score: entry.score })
+    })
+    this.setData({ statsPanelTitle: type === 'pending' ? '待参与项目' : type === 'completed' ? '已完成项目' : '各项目得分', statsPanelTeam: team?.name || '', statsProjects: rows })
+  },
+  closeStatsPanel() { this.setData({ statsPanelType: '', statsProjects: [] }) },
+  stopPanelTap() {},
+  openStatsProject(e: WechatMiniprogram.TouchEvent) {
+    this.closeStatsPanel()
+    this.openProject(e)
   },
   async reload() {
     try { await sync(); const state = load(); if (state.revision !== this.data.state.revision || state.role !== this.data.state.role || this.data.cloudError) this.refresh() }
