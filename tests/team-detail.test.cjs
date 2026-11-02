@@ -16,6 +16,7 @@ function harness(role = '管理员') {
 }
 test('队伍详情按姓名搜索并转移成员，自动交接旧队长及设置新队长', async () => {
   const app = harness()
+  app.page.changeMemberScope({ currentTarget: { dataset: { scope: 'available' } } })
   app.page.searchTeamMembers({ detail: { value: '甲' } })
   assert.equal(app.page.data.memberCandidates.length, 1)
   await app.page.assignTeamMember({ currentTarget: { dataset: { id: 'a' } } })
@@ -37,4 +38,19 @@ test('普通成员不能通过队伍详情调整成员，失效队伍不写入',
   assert.equal(admin.page.data.team, null)
   await admin.page.assignTeamMember({ currentTarget: { dataset: { id: 'a' } } })
   assert.equal(admin.saves(), 0)
+})
+
+test('统一成员名册按当前与可移入范围搜索，普通用户仅可查看本队成员', () => {
+  const app = harness()
+  assert.equal(app.page.data.memberCandidates.length, 0)
+  app.page.changeMemberScope({ currentTarget: { dataset: { scope: 'available' } } })
+  assert.equal(app.page.data.memberCandidates.length, 2)
+  assert.ok(app.page.data.memberCandidates.every(m => !m.selected))
+  app.page.changeMemberScope({ currentTarget: { dataset: { scope: 'current' } } })
+  assert.equal(app.page.data.memberCandidates.length, 0)
+  const viewer = harness('用户')
+  viewer.page.onLoad({ id: 'old' }); viewer.page.refresh()
+  assert.equal(viewer.page.data.memberCandidates.length, 2)
+  viewer.page.changeMemberScope({ currentTarget: { dataset: { scope: 'available' } } })
+  assert.equal(viewer.page.data.memberScope, 'current')
 })

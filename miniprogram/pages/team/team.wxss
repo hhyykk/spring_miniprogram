@@ -1,8 +1,27 @@
-.team-heading { display: flex; align-items: center; gap: 24rpx; margin-bottom: 32rpx; }
-.team-heading .heading { margin: 0 0 8rpx; word-break: break-all; }
-.team-heading > view { min-width: 0; }
-.team-member { display: flex; align-items: center; gap: 20rpx; min-height: 112rpx; padding: 20rpx 0; }
+/* Hallmark · v2.0.0 · scope: app · theme: project tokens · signature: unified member roster · no motion */
+/* critique: repeated member panels merged into a searchable roster with explicit transfer actions */
+.team-detail { --team-soft: #fceee5; --team-focus: #b94e16; }
+.team-identity { display: flex; align-items: flex-start; gap: 28rpx; padding: 16rpx 0 36rpx; }
+.team-avatar-control { width: 132rpx; flex-shrink: 0; text-align: center; }
+.team-avatar { display: block; width: 132rpx; height: 132rpx; border-radius: 24rpx; }
+.team-avatar-fallback { background: var(--surface); color: var(--muted); display: flex; align-items: center; justify-content: center; font-size: 48rpx; font-weight: 600; }
+.avatar-caption { display: block; font-size: 26rpx; color: var(--accent); padding-top: 12rpx; }
+.team-identity-copy { flex: 1; min-width: 0; }
+.team-identity .heading { margin: 0 0 12rpx; overflow-wrap: break-word; min-width: 0; min-height: 64rpx; }
+.team-slogan { font-size: 30rpx; line-height: 1.65; white-space: pre-wrap; overflow-wrap: break-word; min-height: 88rpx; }
+.member-section { background: var(--surface); padding: 28rpx; border-radius: 24rpx; }
+.member-section-heading { display: flex; justify-content: space-between; align-items: center; gap: 20rpx; }
+.member-section-heading .section { margin: 0; }
+.member-tabs { display: flex; gap: 24rpx; border-bottom: 1rpx solid var(--border); margin: 16rpx 0 24rpx; }
+button.member-tab { flex: 1; min-width: 0; margin: 0; min-height: 88rpx; padding: 20rpx 8rpx; font-size: 28rpx; font-weight: 500; border-radius: 0; background: var(--surface); color: var(--muted); border-bottom: 4rpx solid var(--surface); }
+button.member-tab.selected { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+.member-search { margin-bottom: 8rpx; }
+.team-member { display: flex; align-items: center; gap: 20rpx; min-height: 120rpx; padding: 20rpx 0; }
 .team-member + .team-member { border-top: 1rpx solid var(--border); }
-.member-avatar { width: 64rpx; height: 64rpx; border-radius: 50%; flex-shrink: 0; }
-.member-name { flex: 1; min-width: 0; word-break: break-all; }
-button.member-action { width: auto; min-height: 88rpx; padding: 16rpx 24rpx; margin: 0; flex-shrink: 0; }
+.member-avatar { width: 72rpx; height: 72rpx; border-radius: 50%; flex-shrink: 0; font-size: 30rpx; background: var(--raised); }
+.member-name { flex: 1; min-width: 0; overflow-wrap: break-word; }
+.member-name-row { display: flex; align-items: center; gap: 12rpx; flex-wrap: wrap; }
+.captain-label { font-size: 24rpx; color: var(--accent); background: var(--team-soft); padding: 4rpx 12rpx; border-radius: 8rpx; }
+button.member-action { width: auto; min-height: 88rpx; padding: 16rpx 20rpx; margin: 0; flex-shrink: 0; font-size: 28rpx; background: var(--raised); color: var(--muted); }
+button.member-add { color: var(--accent); background: var(--team-soft); }
+.team-detail button:focus-visible, .team-avatar-control:focus-visible, .team-slogan:focus-visible { outline: 4rpx solid var(--team-focus); outline-offset: 4rpx; }

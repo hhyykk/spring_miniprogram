@@ -147,3 +147,13 @@ test('未填写姓名的用户不能自行加入队伍', () => {
   const after = clone(before); after.members[1].teamId = 't'
   assert.throws(() => domain.authorize(before, after, 'b', '用户'), /姓名/)
 })
+
+test('队伍口号兼容旧数据，队长可改本队口号，其他成员不能越权', () => {
+  const before = fixture()
+  assert.equal(domain.normalizeState(before).teams[0].slogan, '')
+  const after = clone(before); after.teams[0].slogan = '一起出发'
+  assert.doesNotThrow(() => domain.authorize(before, after, 'a', '用户'))
+  assert.throws(() => domain.authorize(before, after, 'b', '用户'))
+  const invalid = clone(before); invalid.teams[0].slogan = '口'.repeat(101)
+  assert.throws(() => domain.authorize(before, invalid, 'a', '管理员'))
+})
