@@ -21,39 +21,24 @@
   </block>
   <view wx:if="{{tab === 'teams'}}" class="teams-screen">
     <view class="teams-heading-row"><view><view class="heading">我的队伍</view><view class="small muted">共 {{teams.length}} 支队伍</view></view><button wx:if="{{state.role === '管理员'}}" class="teams-create" bindtap="createTeam">创建队伍</button></view>
-  <view wx:if="{{editingTeamId && tab === 'teams'}}" class="team-editor card">
-    <view class="between"><view class="section" style="margin:0">编辑队伍</view><button class="secondary compact" bindtap="closeTeamEditor">关闭</button></view>
-    <text class="field-label">队伍名称</text><input value="{{editingTeamName}}" bindinput="inputTeamName" maxlength="30"/>
-    <view class="button-row"><button class="primary" bindtap="saveTeamName">保存队名</button><button class="secondary" bindtap="chooseTeamAvatar">修改队伍头像</button></view>
-    <view class="section">搜索用户</view><input value="{{teamSearch}}" bindinput="searchTeamMembers" type="text" aria-label="按姓名搜索用户" placeholder="按姓名搜索"/>
-    <view wx:for="{{memberCandidates}}" wx:key="id" class="member-result">
-      <view class="row"><image wx:if="{{item.avatar}}" class="member-avatar" src="{{item.avatar}}"/><view><view>{{item.name || '未填写姓名'}}</view><view class="small muted">{{item.teamName}}</view></view></view>
-      <button wx:if="{{state.role === '管理员'}}" class="secondary compact" data-id="{{item.id}}" bindtap="assignTeamMember">{{item.selected ? '移出' : '加入'}}</button>
-    </view>
-    <view wx:if="{{!memberCandidates.length}}" class="empty">没有找到匹配的用户</view>
-  </view>
-    <view wx:for="{{teams}}" wx:key="id" class="team-roster {{item.mine ? 'team-roster-mine' : ''}}">
+    <view wx:for="{{teams}}" wx:key="id" class="team-roster {{item.mine ? 'team-roster-mine' : ''}}" data-id="{{item.id}}" bindtap="openTeam" role="button" aria-label="查看{{item.name}}队伍详情">
       <view class="team-roster-header">
-        <image wx:if="{{item.avatar}}" class="team-roster-avatar" src="{{item.avatar}}" mode="aspectFill"/>
-        <view wx:else class="team-roster-avatar team-initial">{{item.name[0]}}</view>
-        <view class="team-roster-title"><view class="team-name">{{item.name}}</view><view class="team-meta"><text>{{item.members.length}} 位伙伴</text><text wx:if="{{item.mine}}" class="team-mine-label">我的队伍</text></view></view>
-        <button wx:if="{{state.role === '管理员' || item.captainId === me.id}}" class="team-edit" data-id="{{item.id}}" bindtap="editTeam">编辑</button>
+        <image wx:if="{{item.avatar}}" class="team-roster-avatar" data-id="{{item.id}}" catchtap="chooseTeamAvatar" src="{{item.avatar}}" mode="aspectFill"/>
+        <view wx:else class="team-roster-avatar team-initial" data-id="{{item.id}}" catchtap="chooseTeamAvatar">{{item.name[0]}}</view>
+        <view class="team-roster-title"><view class="team-name" data-id="{{item.id}}" catchtap="renameTeam">{{item.name}}</view><view class="team-meta"><text>{{item.members.length}} 位伙伴</text><text wx:if="{{item.mine}}" class="team-mine-label">我的队伍</text></view></view>
+
       </view>
       <view class="team-people">
-        <view wx:for="{{item.members}}" wx:for-item="member" wx:key="id" class="team-person" data-id="{{member.id}}" bindtap="moveMember" role="{{state.role === '管理员' ? 'button' : 'text'}}" aria-label="{{member.name || '未填写姓名'}}{{state.role === '管理员' ? '，调整队伍' : ''}}">
+        <view wx:for="{{item.members}}" wx:for-item="member" wx:key="id" class="team-person">
           <image wx:if="{{member.avatar}}" src="{{member.avatar}}" class="team-person-avatar" mode="aspectFill"/>
           <view wx:else class="team-person-avatar team-initial">{{member.name ? member.name[0] : '人'}}</view>
           <text class="team-person-name">{{member.name || '未填写姓名'}}</text><text wx:if="{{member.id === item.captainId}}" class="team-captain">队长</text>
         </view>
         <view wx:if="{{!item.members.length}}" class="team-no-members small muted">暂无成员</view>
       </view>
-      <view wx:if="{{item.mine || !me.teamId}}" class="team-roster-actions"><button wx:if="{{item.mine}}" class="team-leave" bindtap="leaveTeam">退出队伍</button><button wx:if="{{!me.teamId}}" class="teams-create team-join" data-id="{{item.id}}" bindtap="joinTeam">加入这支队伍</button></view>
+      <view wx:if="{{item.mine || !me.teamId}}" class="team-roster-actions"><button wx:if="{{item.mine}}" class="team-leave" catchtap="leaveTeam">退出队伍</button><button wx:if="{{!me.teamId}}" class="teams-create team-join" data-id="{{item.id}}" catchtap="joinTeam">加入这支队伍</button></view>
     </view>
     <view wx:if="{{!teams.length}}" class="empty">暂无队伍</view>
-    <view wx:if="{{state.role === '管理员'}}" class="team-allocation">
-      <view class="section">成员调配</view>
-      <view class="team-allocation-row" wx:for="{{state.members}}" wx:key="id" data-id="{{item.id}}" bindtap="moveMember" role="button" aria-label="调整{{item.name || '未填写姓名'}}的队伍"><text>{{item.name || '未填写姓名'}}</text><text class="team-allocation-action">调整队伍</text></view>
-    </view>
   </view>
   <block wx:if="{{tab === 'rank'}}"><view class="heading">队伍排行榜</view><view class="card ranking" wx:for="{{ranking}}" wx:key="id"><text class="rank-number">{{item.rank}}</text><image wx:if="{{item.avatar}}" class="avatar" src="{{item.avatar}}"/><view class="rank-info"><view class="bold">{{item.name}}</view><progress class="rank-progress" percent="{{item.progress}}" stroke-width="6" activeColor="#b94e16" backgroundColor="#e9edef" border-radius="6" aria-label="评分进度 {{item.progress}}%"/></view><view class="score">{{item.score}}<text>分</text></view></view><view wx:if="{{!ranking.length}}" class="empty">创建第一支队伍，开启挑战。</view></block>
   <block wx:if="{{tab === 'me'}}">

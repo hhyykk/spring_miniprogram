@@ -1,0 +1,18 @@
+<view class="page">
+  <view wx:if="{{cloudError}}" class="notice">{{cloudError}}<button class="secondary" bindtap="reload">重试</button></view>
+  <block wx:if="{{team}}">
+    <view class="team-heading"><image wx:if="{{team.avatar}}" src="{{team.avatar}}" class="avatar" mode="aspectFill"/><view><view class="heading">{{team.name}}</view><view class="small muted">{{members.length}} 位伙伴</view></view></view>
+    <view class="card">
+      <view class="section" style="margin-top:0">队伍成员</view>
+      <view wx:for="{{members}}" wx:key="id" class="team-member"><image wx:if="{{item.avatar}}" class="member-avatar" src="{{item.avatar}}" mode="aspectFill"/><view wx:else class="member-avatar fallback">{{item.name ? item.name[0] : '人'}}</view><text class="member-name">{{item.name || '未填写姓名'}}</text><text wx:if="{{item.id === team.captainId}}" class="tag">队长</text></view>
+      <view wx:if="{{!members.length}}" class="empty">暂无成员</view>
+    </view>
+    <view wx:if="{{role === '管理员'}}" class="card">
+      <view class="section" style="margin-top:0">调整成员</view>
+      <input value="{{teamSearch}}" bindinput="searchTeamMembers" placeholder="按姓名搜索用户" aria-label="按姓名搜索用户"/>
+      <view wx:for="{{memberCandidates}}" wx:key="id" class="team-member"><view class="member-name"><view>{{item.name || '未填写姓名'}}</view><view class="small muted">{{item.teamName}}</view></view><button class="secondary member-action" data-id="{{item.id}}" bindtap="assignTeamMember" disabled="{{savingMember}}">{{item.selected ? '移出' : '加入'}}</button></view>
+      <view wx:if="{{!memberCandidates.length}}" class="empty">没有找到匹配的用户</view>
+    </view>
+  </block>
+  <view wx:elif="{{!cloudError}}" class="empty">队伍不存在或已被删除</view>
+</view>

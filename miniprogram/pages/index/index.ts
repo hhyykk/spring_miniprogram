@@ -41,7 +41,6 @@ Page({
       }, 0)
       : 0
     if (this.data.me.id !== state.members[0].id || this.data.nameDraft === this.data.me.name) this.setData({ nameDraft: state.members[0].name === '微信用户' ? '' : state.members[0].name })
-    this.updateMemberCandidates(state.members, state.teams)
     this.updateStatsPanel(state, projects)
     this.setData({ state, projects, teams, ranking: sorted.map((t, i) => ({ ...t, rank: sorted.findIndex(s => s.score === t.score) + 1, order: i })), me: state.members[0], pending, completed, totalScore }, () => this.scrollToCurrentProject())
   },
@@ -109,59 +108,37 @@ Page({
   createTeam() { const state = load(); if (state.role !== '管理员') return; editText('新队伍名称', '', async name => { const id = `t${Date.now()}`; const captainId = state.members[0].teamId || !state.members[0].name.trim() || state.members[0].name === '微信用户' ? '' : state.members[0].id; state.teams.push({ id, name, avatar: '', captainId }); if (captainId) state.members[0].teamId = id; state.projects.forEach(p => p.entries.push({ teamId: id, status: 0, score: null, startedAt: 0, finishedAt: 0 })); if (!await save(state)) return; this.refresh() }) },
   async joinTeam(e: WechatMiniprogram.TouchEvent) { const state = load(); const me = state.members[0]; if (!me.name.trim() || me.name === '微信用户') { this.setData({ tab: 'me' }); return notify('请先填写姓名') }; if (me.teamId) return notify('请先退出当前队伍'); me.teamId = e.currentTarget.dataset.id; const team = state.teams.find(t => t.id === me.teamId)!; if (!team.captainId) team.captainId = me.id; if (!await save(state)) return; this.refresh() },
   leaveTeam() { const state = load(); confirm('退出队伍', '退出后可以加入其他队伍；若你是队长，将由下一位成员接任。', async () => { const team = state.teams.find(t => t.id === state.members[0].teamId); state.members[0].teamId = ''; if (team?.captainId === state.members[0].id) team.captainId = state.members.filter(m => m.teamId === team.id).sort((a, b) => a.id.localeCompare(b.id))[0]?.id || ''; if (!await save(state)) return; this.refresh() }) },
-  editTeam(e: WechatMiniprogram.TouchEvent) {
+  openTeam(e: WechatMiniprogram.TouchEvent) { wx.navigateTo({ url: `/pages/team/team?id=${e.currentTarget.dataset.id}` }) },
+  renameTeam(e: WechatMiniprogram.TouchEvent) {
+    const id = e.currentTarget.dataset.id
     const state = load()
-    const team = state.teams.find(t => t.id === e.currentTarget.dataset.id)
+    const team = state.teams.find(t => t.id === id)
     if (!team || (state.role !== '管理员' && team.captainId !== state.members[0].id)) return
-    this.setData({ editingTeamId: team.id, editingTeamName: team.name, editingTeamAvatar: team.avatar, teamSearch: '' })
-    this.updateMemberCandidates(state.members, state.teams)
+    editText('队伍名称', team.name, async name => {
+      if (name.length > 30) return notify('队伍名称最多 30 字')
+      const latest = load()
+      const target = latest.teams.find(t => t.id === id)
+      if (!target || (latest.role !== '管理员' && target.captainId !== latest.members[0].id)) return
+      target.name = name
+      if (await save(latest)) this.refresh()
+    })
   },
-  closeTeamEditor() { this.setData({ editingTeamId: '', teamSearch: '', memberCandidates: [] }) },
-  inputTeamName(e: WechatMiniprogram.Input) { this.setData({ editingTeamName: e.detail.value }) },
-  searchTeamMembers(e: WechatMiniprogram.Input) {
-    this.setData({ teamSearch: e.detail.value })
+  chooseTeamAvatar(e: WechatMiniprogram.TouchEvent) {
+    const id = e.currentTarget.dataset.id
     const state = load()
-    this.updateMemberCandidates(state.members, state.teams)
-  },
-  updateMemberCandidates(members: Member[], teams: { id: string; name: string }[]) {
-    const query = this.data.teamSearch.trim().toLocaleLowerCase()
-    const candidates = members.filter(m => !query || m.name.toLocaleLowerCase().includes(query))
-      .map(m => ({ ...m, teamName: teams.find(t => t.id === m.teamId)?.name || '未加入队伍', selected: m.teamId === this.data.editingTeamId }))
-    this.setData({ memberCandidates: candidates })
-  },
-  async saveTeamName() {
-    const state = load()
-    const team = state.teams.find(t => t.id === this.data.editingTeamId)
-    const name = this.data.editingTeamName.trim()
-    if (!team || !name) return notify('请填写队伍名称')
-    team.name = name
-    if (await save(state)) { this.refresh(); notify('队名已保存') }
-  },
-  chooseTeamAvatar() {
+    const team = state.teams.find(t => t.id === id)
+    if (!team || (state.role !== '管理员' && team.captainId !== state.members[0].id)) return
     wx.chooseMedia({ count: 1, mediaType: ['image'], success: async result => {
       try {
         const avatar = await persistFile(result.tempFiles[0].tempFilePath)
-        const state = load()
-        const team = state.teams.find(t => t.id === this.data.editingTeamId)
-        if (!team) return
-        team.avatar = avatar
-        if (await save(state)) { this.setData({ editingTeamAvatar: avatar }); this.refresh() }
+        const latest = load()
+        const target = latest.teams.find(t => t.id === id)
+        if (!target || (latest.role !== '管理员' && target.captainId !== latest.members[0].id)) return
+        target.avatar = avatar
+        if (await save(latest)) this.refresh()
       } catch { notify('队伍头像上传失败，请重试') }
     } })
   },
-  async assignTeamMember(e: WechatMiniprogram.TouchEvent) {
-    const state = load()
-    if (state.role !== '管理员') return
-    const team = state.teams.find(t => t.id === this.data.editingTeamId)
-    const member = state.members.find(m => m.id === e.currentTarget.dataset.id)
-    if (!team || !member) return
-    const old = state.teams.find(t => t.id === member.teamId)
-    member.teamId = member.teamId === team.id ? '' : team.id
-    if (old?.captainId === member.id) old.captainId = state.members.filter(m => m.teamId === old.id).sort((a, b) => a.id.localeCompare(b.id))[0]?.id || ''
-    if (member.teamId && !team.captainId) team.captainId = member.id
-    if (await save(state)) this.refresh()
-  },
-  moveMember(e: WechatMiniprogram.TouchEvent) { const state = load(); if (state.role !== '管理员') return; const member = state.members.find(m => m.id === e.currentTarget.dataset.id)!; wx.showActionSheet({ itemList: [...state.teams.map(t => t.name), '移出队伍'], success: async r => { const old = state.teams.find(t => t.id === member.teamId); member.teamId = state.teams[r.tapIndex]?.id || ''; if (old?.captainId === member.id) old.captainId = state.members.find(m => m.teamId === old.id)?.id || ''; const next = state.teams.find(t => t.id === member.teamId); if (next && !next.captainId) next.captainId = member.id; if (!await save(state)) return; this.refresh() } }) },
   openProfile() { this.setData({ tab: 'me' }) },
   inputName(e: WechatMiniprogram.Input) { this.setData({ nameDraft: e.detail.value }) },
   async saveName() {

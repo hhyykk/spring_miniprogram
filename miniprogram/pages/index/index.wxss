@@ -100,3 +100,6 @@ button.team-join { width: 100%; }
 .team-allocation-action { font-size: 28rpx; color: var(--accent); flex-shrink: 0; }
 .teams-screen button:focus-visible, .team-person:focus-visible, .team-allocation-row:focus-visible { outline: 4rpx solid var(--team-focus); outline-offset: 4rpx; }
 .teams-screen button:active, .team-allocation-row:active { opacity: .7; }
+
+.project-toolbar { display: block; }
+.project-toolbar button { width: 100%; margin: 0; }

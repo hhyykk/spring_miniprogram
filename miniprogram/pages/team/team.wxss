@@ -1,0 +1,8 @@
+.team-heading { display: flex; align-items: center; gap: 24rpx; margin-bottom: 32rpx; }
+.team-heading .heading { margin: 0 0 8rpx; word-break: break-all; }
+.team-heading > view { min-width: 0; }
+.team-member { display: flex; align-items: center; gap: 20rpx; min-height: 112rpx; padding: 20rpx 0; }
+.team-member + .team-member { border-top: 1rpx solid var(--border); }
+.member-avatar { width: 64rpx; height: 64rpx; border-radius: 50%; flex-shrink: 0; }
+.member-name { flex: 1; min-width: 0; word-break: break-all; }
+button.member-action { width: auto; min-height: 88rpx; padding: 16rpx 24rpx; margin: 0; flex-shrink: 0; }

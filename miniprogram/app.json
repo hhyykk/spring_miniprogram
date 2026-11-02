@@ -4,7 +4,8 @@
     "pages/project/project",
     "pages/location/location",
     "pages/scene/scene",
-    "pages/logs/logs"
+    "pages/logs/logs",
+    "pages/team/team"
   ],
   "window": {
     "navigationBarTextStyle": "black",
