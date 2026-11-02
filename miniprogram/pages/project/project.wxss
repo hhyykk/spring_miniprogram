@@ -14,8 +14,10 @@
 .detail-tab.selected { color: var(--text); border-bottom-color: var(--text); }
 .project-title { display: flex; align-items: flex-start; gap: 20rpx; }
 .project-title .heading { flex: 1; min-width: 0; }
-.project-edit { width: auto; flex-shrink: 0; min-height: 88rpx; margin: 12rpx 0 28rpx; padding: 16rpx 24rpx; }
 .description-input { min-height: 240rpx; width: 100%; line-height: 1.7; }
 .description-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 16rpx; margin-top: 24rpx; }
-button.description-save, button.description-reload { width: auto; }
+button.description-save, button.description-reload, button.description-cancel { width: auto; }
 .description-error { color: #ad3232; font-size: 28rpx; line-height: 1.6; margin-top: 16rpx; }
+.editable-title, .editable-description { cursor: pointer; }
+.editable-description { min-height: 88rpx; padding: 12rpx 0; }
+button.project-delete { display: block; width: 100%; margin-top: 36rpx; }

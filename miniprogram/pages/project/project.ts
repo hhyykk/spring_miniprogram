@@ -3,7 +3,7 @@ import { load, save, sync, Project, notify, confirm } from '../../utils/store'
 interface PreviewCanvas { width: number; height: number }
 interface PreviewVenue { dispose(): void }
 Page({
-  data: { project: null as Project | null, role: '', detailTab: 'detail', descriptionDraft: '', descriptionBase: '', descriptionDirty: false, descriptionSaving: false, descriptionError: '', entries: [] as object[], clock: '', countdown: '', markers: [] as object[], mapPoints: [] as { latitude: number; longitude: number }[], hasUserLocation: false, locationError: '', modelPreview: '', previewError: '' },
+  data: { project: null as Project | null, role: '', detailTab: 'detail', descriptionEditing: false, descriptionDraft: '', descriptionBase: '', descriptionDirty: false, descriptionSaving: false, descriptionError: '', entries: [] as object[], clock: '', countdown: '', markers: [] as object[], mapPoints: [] as { latitude: number; longitude: number }[], hasUserLocation: false, locationError: '', modelPreview: '', previewError: '' },
   projectId: '', visible: false, tracking: false, locationListener: null as ((position: { latitude: number; longitude: number }) => void) | null, ready: false, previewVenue: null as PreviewVenue | null,
   onLoad(query: Record<string, string>) { this.projectId = query.id },
   renderedRevision: -1,
@@ -102,6 +102,16 @@ Page({
       })
   },
   async mutate(change: (project: Project) => void, adminOnly = true) { const state = load(); if (adminOnly ? state.role !== '管理员' : state.role === '用户') return false; const p = state.projects.find(item => item.id === this.projectId); if (!p) return false; change(p); if (!await save(state)) return false; this.refresh(); return true },
+  beginDescriptionEdit() {
+    if (load().role !== '管理员' || !this.data.project || this.data.descriptionEditing) return
+    this.resetDescription()
+    this.setData({ descriptionEditing: true })
+  },
+  cancelDescriptionEdit() {
+    if (this.data.descriptionSaving) return
+    this.resetDescription()
+    this.setData({ descriptionEditing: false })
+  },
   inputDescription(e: WechatMiniprogram.Input) {
     if (this.data.role !== '管理员') return
     const descriptionDraft = e.detail.value
@@ -123,7 +133,7 @@ Page({
     this.setData({ descriptionSaving: true, descriptionError: '' })
     try {
       if (!await save(state)) return
-      this.setData({ descriptionDraft: description, descriptionBase: description, descriptionDirty: false })
+      this.setData({ descriptionDraft: description, descriptionBase: description, descriptionDirty: false, descriptionEditing: false })
       this.refresh()
       notify('项目说明已保存')
     } finally { this.setData({ descriptionSaving: false }) }
@@ -156,28 +166,31 @@ Page({
     if (await save(state)) this.refresh()
   },
   score(e: WechatMiniprogram.TouchEvent) { if (load().role === '用户') return; const id = e.currentTarget.dataset.id; const entry = this.data.project!.entries.find(item => item.teamId === id)!; wx.showModal({ title: '录入成绩（0～100）', editable: true, content: entry.score === null ? '' : String(entry.score), success: r => { if (!r.confirm) return; const raw = (r.content || '').trim(); const value = Number(raw); if (!raw || !Number.isFinite(value) || value < 0 || value > 100) return notify('请输入 0～100 的有效分数'); this.mutate(p => { p.entries.find(item => item.teamId === id)!.score = value }, false) } }) },
-  editProject() {
+  editProjectName() {
     if (load().role !== '管理员' || !this.data.project) return
-    wx.showActionSheet({ itemList: ['修改项目名称', '删除项目'], success: result => {
-      if (result.tapIndex === 1) return confirm('删除项目', '相关参赛状态和成绩将一起移除，确定删除？', async () => {
-        const state = load()
-        if (state.role !== '管理员') return
-        state.projects = state.projects.filter(p => p.id !== this.projectId)
-        if (await save(state)) wx.navigateBack()
-      })
-      const field = 'name'
-      wx.showModal({ title: '项目名称', editable: true, content: this.data.project![field], success: async response => {
-        if (!response.confirm) return
-        const value = (response.content || '').trim()
-        if (!value) return notify('请填写项目名称')
-        if (value.length > 30) return notify('内容过长，请缩短后重试')
-        const state = load()
-        const project = state.projects.find(p => p.id === this.projectId)
-        if (!project || state.role !== '管理员') return
-        project[field] = value
-        if (await save(state)) this.refresh()
-      } })
+    wx.showModal({ title: '项目名称', editable: true, content: this.data.project.name, success: async response => {
+      if (!response.confirm) return
+      const name = (response.content || '').trim()
+      if (!name) return notify('请填写项目名称')
+      if (name.length > 30) return notify('项目名称最多 30 字')
+      const state = load()
+      const project = state.projects.find(p => p.id === this.projectId)
+      if (!project || state.role !== '管理员') return
+      project.name = name
+      if (await save(state)) this.refresh()
     } })
+  },
+  deleteProject() {
+    if (load().role !== '管理员' || !this.data.project) return
+    confirm('删除项目', `确定删除“${this.data.project.name}”？相关参赛状态和成绩将一起移除。`, async () => {
+      const state = load()
+      if (state.role !== '管理员') return
+      state.projects = state.projects.filter(p => p.id !== this.projectId)
+      if (await save(state)) {
+        if (getCurrentPages().length > 1) wx.navigateBack()
+        else wx.redirectTo({ url: '/pages/index/index' })
+      }
+    })
   },
   location() { wx.navigateTo({ url: `/pages/location/location?id=${this.projectId}${this.data.role === '管理员' ? '&edit=1' : ''}` }) },
   scene() { wx.navigateTo({ url: `/pages/scene/scene?id=${this.projectId}` }) },

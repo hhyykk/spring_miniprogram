@@ -1,20 +1,21 @@
-<view class="page" wx:if="{{project}}"><view class="project-title"><view class="heading">{{project.name}}</view><button wx:if="{{role === '管理员'}}" class="secondary project-edit" bindtap="editProject">编辑</button></view>
+<view class="page" wx:if="{{project}}"><view class="project-title"><view class="heading {{role === '管理员' ? 'editable-title' : ''}}" bindtap="editProjectName" role="{{role === '管理员' ? 'button' : 'heading'}}" aria-label="{{role === '管理员' ? '点击修改项目名称' : project.name}}">{{project.name}}</view></view>
 <view class="detail-tabs" role="tablist">
   <button class="detail-tab {{detailTab === 'detail' ? 'selected' : ''}}" data-tab="detail" bindtap="switchDetailTab" role="tab" aria-selected="{{detailTab === 'detail'}}">项目详情</button>
   <button class="detail-tab {{detailTab === 'progress' ? 'selected' : ''}}" data-tab="progress" bindtap="switchDetailTab" role="tab" aria-selected="{{detailTab === 'progress'}}">队伍进度</button>
 </view>
 <block wx:if="{{detailTab === 'detail'}}">
 <view class="card project-description">
-  <view class="section" style="margin-top:0">项目说明</view>
-  <block wx:if="{{role === '管理员'}}">
+  <view class="section" style="margin-top:0" bindtap="beginDescriptionEdit">项目说明</view>
+  <block wx:if="{{role === '管理员' && descriptionEditing}}">
     <textarea class="description-input" value="{{descriptionDraft}}" bindinput="inputDescription" maxlength="500" aria-label="项目说明"/>
     <view wx:if="{{descriptionError}}" class="description-error">{{descriptionError}}</view>
     <view class="description-actions">
+      <button class="secondary description-cancel" bindtap="cancelDescriptionEdit" disabled="{{descriptionSaving}}">取消</button>
       <button wx:if="{{descriptionError}}" class="secondary description-reload" bindtap="resetDescription">载入最新说明</button>
       <button class="primary description-save" bindtap="saveDescription" loading="{{descriptionSaving}}" disabled="{{descriptionSaving}}">保存项目说明</button>
     </view>
   </block>
-  <view wx:else class="small project-rules">{{project.description || '暂无项目说明'}}</view>
+  <view wx:else class="small project-rules {{role === '管理员' ? 'editable-description' : ''}}" bindtap="beginDescriptionEdit" role="{{role === '管理员' ? 'button' : 'text'}}" aria-label="{{role === '管理员' ? '点击编辑项目说明' : '项目说明'}}">{{project.description || (role === '管理员' ? '点击填写项目说明' : '暂无项目说明')}}</view>
 </view>
 <view class="card project-location">
   <view class="section" style="margin-top:0">项目地点</view>
@@ -32,6 +33,7 @@
   </view>
 </view>
 <canvas type="webgl" id="model-preview-canvas" class="preview-canvas"/>
+<button wx:if="{{role === '管理员'}}" class="danger project-delete" bindtap="deleteProject">删除项目</button>
 </block>
 <block wx:if="{{detailTab === 'progress'}}">
 <view wx:if="{{!entries.length}}" class="empty">暂无参赛队伍</view>
