@@ -1,6 +1,7 @@
 <view class="page team-detail">
   <view wx:if="{{cloudError}}" class="notice">{{cloudError}}<button class="secondary" bindtap="reload">重试</button></view>
   <block wx:if="{{team}}">
+    <button class="group-qr-trigger" bindtap="openGroupQr" aria-label="查看队伍微信群二维码"><view class="qr-icon" aria-hidden="true"><view class="qr-square qr-top-left"/><view class="qr-square qr-top-right"/><view class="qr-square qr-bottom-left"/><view class="qr-pixels"/></view></button>
     <view class="team-identity">
       <view class="team-avatar-control" bindtap="chooseAvatar" role="{{canEdit ? 'button' : 'img'}}" aria-label="{{canEdit ? '修改队伍头像' : '队伍头像'}}">
         <image wx:if="{{team.avatar}}" src="{{team.avatar}}" class="team-avatar" mode="aspectFill"/>
@@ -8,16 +9,6 @@
         <text wx:if="{{canEdit}}" class="avatar-caption">换头像</text>
       </view>
       <view class="team-identity-copy"><view class="heading" bindtap="editName" role="{{canEdit ? 'button' : 'heading'}}" aria-label="{{canEdit ? '修改队伍名称' : team.name}}">{{team.name}}</view><view class="team-slogan {{!team.slogan ? 'muted' : ''}}" bindtap="editSlogan" role="{{canEdit ? 'button' : 'text'}}">{{team.slogan || (canEdit ? '点击填写队伍口号' : '暂无队伍口号')}}</view></view>
-    </view>
-    <view class="group-section">
-      <view class="member-section-heading"><view class="section">队伍微信群</view></view>
-      <view wx:if="{{team.groupQr}}" class="group-qr-row">
-        <image class="group-qr-thumbnail" src="{{team.groupQr}}" mode="aspectFit" bindtap="viewGroupQr" role="button" aria-label="查看微信群二维码"/>
-        <view class="group-qr-copy"><view class="group-qr-title">扫码加入队伍群聊</view><view class="small muted">二维码失效时，请联系队长更新</view></view>
-      </view>
-      <view wx:else class="small muted group-qr-empty">{{canEdit ? '创建微信群后，上传群二维码供成员入群' : '队长尚未上传群二维码'}}</view>
-      <button wx:if="{{team.groupQr}}" class="primary group-qr-open" bindtap="viewGroupQr" loading="{{openingQr}}" disabled="{{openingQr || uploadingQr}}">查看入群二维码</button>
-      <view wx:if="{{canEdit}}" class="group-qr-actions"><button class="secondary" bindtap="uploadGroupQr" loading="{{uploadingQr}}" disabled="{{uploadingQr}}">{{team.groupQr ? '更换二维码' : '上传群二维码'}}</button><button wx:if="{{team.groupQr}}" class="group-qr-remove" bindtap="removeGroupQr" disabled="{{uploadingQr}}">移除</button></view>
     </view>
     <view class="member-section">
       <view class="member-section-heading"><view class="section">队伍成员</view><text class="small muted">{{members.length}} 人</text></view>
@@ -36,4 +27,14 @@
   </block>
   <view wx:elif="{{loading}}" class="empty">正在加载队伍…</view>
   <view wx:elif="{{!cloudError}}" class="empty">队伍不存在或已被删除</view>
+</view>
+
+<view wx:if="{{groupQrOpen && team}}" class="group-qr-mask" bindtap="closeGroupQr">
+  <view class="group-qr-dialog" catchtap="stopQrTap" role="dialog" aria-label="队伍微信群二维码">
+    <view class="group-qr-dialog-header"><view class="section">队伍微信群</view><button class="secondary" bindtap="closeGroupQr" aria-label="关闭二维码弹窗">关闭</button></view>
+    <view wx:if="{{team.groupQr}}" class="group-qr-image-wrap"><image class="group-qr-image" src="{{team.groupQr}}" mode="aspectFit" bindtap="viewGroupQr" aria-label="放大查看群二维码"/></view>
+    <view wx:else class="empty">{{canEdit ? '上传微信群二维码，方便队员入群' : '队长尚未上传群二维码'}}</view>
+    <view wx:if="{{team.groupQr}}" class="small muted group-qr-tip">二维码失效时，请联系队长更新</view>
+    <button wx:if="{{canEdit}}" class="primary group-qr-upload" bindtap="uploadGroupQr" loading="{{uploadingQr}}" disabled="{{uploadingQr}}">{{team.groupQr ? '更换二维码' : '上传群二维码'}}</button>
+  </view>
 </view>

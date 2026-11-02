@@ -1,6 +1,6 @@
 /* Hallmark · v2.0.0 · scope: app · theme: project tokens · signature: unified member roster · no motion */
 /* critique: repeated member panels merged into a searchable roster with explicit transfer actions */
-.team-detail { --team-soft: #fceee5; --team-focus: #b94e16; }
+.team-detail { --qr-mask: rgba(0, 0, 0, .4); --team-soft: #fceee5; --team-focus: #b94e16; }
 .team-identity { display: flex; align-items: flex-start; gap: 28rpx; padding: 16rpx 0 36rpx; }
 .team-avatar-control { width: 132rpx; flex-shrink: 0; text-align: center; }
 .team-avatar { display: block; width: 132rpx; height: 132rpx; border-radius: 24rpx; }
@@ -25,14 +25,22 @@ button.member-tab.selected { color: var(--text); border-bottom-color: var(--acce
 button.member-action { width: auto; min-height: 88rpx; padding: 16rpx 20rpx; margin: 0; flex-shrink: 0; font-size: 28rpx; background: var(--raised); color: var(--muted); }
 button.member-add { color: var(--accent); background: var(--team-soft); }
 .team-detail button:focus-visible, .team-avatar-control:focus-visible, .team-slogan:focus-visible { outline: 4rpx solid var(--team-focus); outline-offset: 4rpx; }
-.group-section { background: var(--surface); border-radius: 24rpx; padding: 28rpx; margin-bottom: 24rpx; }
-.group-qr-row { display: flex; align-items: center; gap: 24rpx; margin: 24rpx 0; }
-.group-qr-thumbnail { width: 144rpx; height: 144rpx; flex-shrink: 0; }
-.group-qr-copy { flex: 1; min-width: 0; overflow-wrap: break-word; }
-.group-qr-title { margin-bottom: 8rpx; font-weight: 600; }
-.group-qr-empty { margin: 20rpx 0 24rpx; }
-button.group-qr-open { width: 100%; margin: 0; }
-.group-qr-actions { display: flex; gap: 20rpx; margin-top: 20rpx; }
-.group-qr-actions button { min-height: 88rpx; margin: 0; padding: 20rpx 24rpx; font-size: 28rpx; }
-.group-qr-actions .secondary { flex: 1; min-width: 0; }
-button.group-qr-remove { width: auto; background: var(--surface); color: var(--muted); flex-shrink: 0; }
+
+.team-detail { position: relative; }
+.team-identity { padding-right: 88rpx; }
+button.group-qr-trigger { position: absolute; top: 36rpx; right: 32rpx; display: flex; align-items: center; justify-content: center; width: 88rpx; height: 88rpx; min-height: 88rpx; margin: 0; padding: 20rpx; border-radius: 16rpx; background: var(--surface); color: var(--text); }
+.qr-icon { position: relative; width: 42rpx; height: 42rpx; }
+.qr-square { position: absolute; width: 18rpx; height: 18rpx; border: 4rpx solid currentColor; }
+.qr-top-left { top: 0; left: 0; }
+.qr-top-right { top: 0; right: 0; }
+.qr-bottom-left { bottom: 0; left: 0; }
+.qr-pixels { position: absolute; right: 0; bottom: 0; width: 18rpx; height: 18rpx; border-left: 6rpx solid currentColor; border-bottom: 6rpx solid currentColor; }
+.group-qr-mask { position: fixed; inset: 0; z-index: 100; background: var(--qr-mask); display: flex; align-items: center; justify-content: center; padding: 32rpx; }
+.group-qr-dialog { width: 100%; max-width: 650rpx; max-height: 85vh; overflow-y: auto; padding: 28rpx; border-radius: 24rpx; background: var(--surface); }
+.group-qr-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; }
+.group-qr-dialog-header .section { margin: 0; flex: 1; min-width: 0; }
+.group-qr-dialog-header button { width: auto; margin: 0; min-height: 88rpx; padding: 16rpx 24rpx; flex-shrink: 0; }
+.group-qr-image-wrap { margin: 24rpx 0; }
+.group-qr-image { display: block; width: 100%; height: 480rpx; }
+.group-qr-tip { text-align: center; margin: 20rpx 0; }
+button.group-qr-upload { width: 100%; margin: 24rpx 0 0; }

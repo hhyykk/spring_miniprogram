@@ -1,7 +1,7 @@
 import { load, save, sync, Member, Team, editText, notify, persistFile, confirm } from '../../utils/store'
 interface Candidate extends Member { teamName: string; selected: boolean }
 Page({
-  data: { team: null as Team | null, role: '', canEdit: false, memberScope: 'current', loading: true, uploadingQr: false, openingQr: false, members: [] as Member[], teamSearch: '', memberCandidates: [] as Candidate[], editingTeamId: '', savingMember: false, cloudError: '' },
+  data: { team: null as Team | null, role: '', canEdit: false, memberScope: 'current', loading: true, uploadingQr: false, openingQr: false, groupQrOpen: false, members: [] as Member[], teamSearch: '', memberCandidates: [] as Candidate[], editingTeamId: '', savingMember: false, cloudError: '' },
   teamId: '',
   poll: null as ReturnType<typeof setInterval> | null,
   onLoad(query: Record<string, string>) { this.teamId = query.id },
@@ -24,6 +24,9 @@ Page({
     this.setData({ team, canEdit: !!team && (state.role === '管理员' || team.captainId === state.members[0].id), role: state.role, members, memberCandidates, editingTeamId: this.teamId })
   },
   searchTeamMembers(e: WechatMiniprogram.Input) { this.setData({ teamSearch: e.detail.value }); this.refresh() },
+  openGroupQr() { this.setData({ groupQrOpen: true }) },
+  closeGroupQr() { this.setData({ groupQrOpen: false }) },
+  stopQrTap() {},
   uploadGroupQr() {
     const state = load()
     const team = state.teams.find(t => t.id === this.teamId)
